@@ -1,1 +1,3 @@
 numpy==1.13.3
+socket==17.2
+argparse==16.4
