@@ -2,15 +2,10 @@ from socket import AF_INET, SOCK_STREAM, socket
 from argparse import ArgumentParser
 import curses
 import os
+from login import *
 buffer_length = 1024
 
-nicknames = []
 
-def validate_nickname(nickname):
-    if len(nickname) == 0 or ' ' in nickname or len(nickname) > 8:
-        return False
-    else:
-        return True
 
 if __name__ == '__main__':
     '''
@@ -30,34 +25,20 @@ if __name__ == '__main__':
                         default='127.0.0.1')
     args = parser.parse_args()
     '''
-
-    if os.path.exists("client.ini"):
-        with open("client.ini", "r+") as cli:
-            for id, nick in enumerate(cli.readlines()):
-                nicknames.append(nick)
-                print id, nick
     nick = ""
-    if len(nicknames) > 0:
+    if (load_nicknames()):
         while True:
-            id = raw_input("Choose id: ")
-            id = int(id)
-            if id >= 0 and id < len(nicknames):
-                nick = nicknames[id]
+            opt = raw_input("Load nick? y/n ")
+            if opt == "y":
+                nick = load_nickname()
                 break
+            if opt == "n":
+                nick = enter_nickname()
+                break
+            print "Wrong input! Enter \"y\" for Yes and \"n\" for No"
     else:
-        while True:
-            nick = raw_input("Enter nickname: ")
-            if validate_nickname(nick):
-                if nick not in nicknames:
-                    nicknames.append(nick)
-                else:
-                    print "already exist!"
-                break
-                
-
-        with open("client.ini", "w") as cli:
-            for nick in nicknames:
-                cli.write(nick+'\n')
+        nick = enter_nickname()
+                       
 
     print "Your nickname: ", nick
     
