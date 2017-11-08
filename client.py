@@ -27,7 +27,7 @@ if __name__ == '__main__':
     '''
     # nick = ""
     nick = enter_nickname()
-	'''
+    '''
     if (load_nicknames()):
         while True:
             opt = raw_input("Load nick? y/n ")
