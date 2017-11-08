@@ -12,7 +12,17 @@ except ImportError:
 nicknames = []
 authorizedNickname = ""
 
-def send_data(listbox, nickname_entry, window):
+class Nickname:
+    def __init__(self):
+        self.name = ""
+    
+    def setNickname(self, nickname):
+        self.name = nickname
+        
+    def getNickname(self):
+        return self.name
+
+def send_data(listbox, nickname_entry, window, nick):
     current = listbox.curselection()
     if current:
         nickname = listbox.get(current[0])
@@ -21,8 +31,7 @@ def send_data(listbox, nickname_entry, window):
         nickname = nickname_entry.get()
         print("Authorization...", nickname)
     if validate_nickname(nickname):
-        global authorizedNickname
-        authorizedNickname = nickname
+        nick.setNickname(nickname)
         print("Welcome,", nickname)
         tkBox.showinfo("Successful authorization!", "Authorization passed, try to connect to server")
         window.destroy()
@@ -32,7 +41,7 @@ def send_data(listbox, nickname_entry, window):
         nickname_entry.delete(0, len(nickname))
         nickname_entry.insert(0, "")
  
-def authorization(users_list):
+def authorization(users_list, nick):
     window = tk.Tk()
     listbox_label_location_x = 10
     listbox_label_location_y = 10
@@ -47,6 +56,7 @@ def authorization(users_list):
     button_height = 4
     button_width = 15
     window.geometry('350x200')
+    window.resizable(width=False, height=False)
     window.title('Authorization')
     listbox_text = tk.Label(text = "Choose nickname from list")
     listbox_text.place(x = listbox_label_location_x, y = listbox_label_location_y)
@@ -61,7 +71,7 @@ def authorization(users_list):
     nickname_text.place(x=nickname_label_x, y = nickname_label_y)
     nickname = tk.Entry()
     nickname.place(x=nickname_x, y=nickname_y)
-    b = tk.Button(window, text="Authorize", command=lambda: send_data(listbox, nickname, window))
+    b = tk.Button(window, text="Authorize", command=lambda: send_data(listbox, nickname, window, nick))
     b.config(height = button_height, width = button_width)
     b.place(x=button_x, y=button_y)
     window.mainloop()
@@ -91,11 +101,11 @@ def load_nicknames():
         return False
 
 def enter_nickname(load=True):
-    authorizedNickname = ""
+    nick = Nickname()
     if load:
 	    load_nicknames()
     authorization(nicknames)
-    return authorizedNickname
+    return nick.getNickname()
 
 
 
