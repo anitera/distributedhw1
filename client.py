@@ -26,7 +26,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     '''
     # nick = ""
-	nick = enter_nickname()
+    nick = enter_nickname()
 	'''
     if (load_nicknames()):
         while True:
