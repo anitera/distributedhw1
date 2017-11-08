@@ -63,7 +63,7 @@ def authorization(users_list, nick):
     listbox = tk.Listbox(window)
     users_counter = 0
     users_list = sorted(users_list) # Not neccessary
-    for users in users_list:
+    for users in set(users_list):
         listbox.insert(users_counter, users)
         users_counter += 1
     listbox.place(x=listbox_label_x, y=listbox_label_y)
