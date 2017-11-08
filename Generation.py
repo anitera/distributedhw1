@@ -1,5 +1,6 @@
 #import numpy as np
 import random
+import sudoku_solver
 
 class Scale(object):
 	
@@ -38,6 +39,7 @@ class Scale(object):
 		Scale.transp(self)
 		Scale.rows_change(self)
 		Scale.transp(self)
+	
 
 	def square_change_horizontal(self):
 		square = random.randrange(self.size)
@@ -67,12 +69,3 @@ def return_answer():
 	return sc
 
 return_answer().show()
-
-'''def return_question():
-	answer = return_answer()
-	for i in xrange (answer.size**2):
-		for j in xrange (answer.size**2):
-
-#return_question()'''
-	
-
