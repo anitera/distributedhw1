@@ -1,4 +1,3 @@
-#import numpy as np
 import random
 import sudoku_solver
 
@@ -38,8 +37,7 @@ class Scale(object):
 	def colums_change(self):
 		Scale.transp(self)
 		Scale.rows_change(self)
-		Scale.transp(self)
-	
+		Scale.transp(self)	
 
 	def square_change_horizontal(self):
 		square = random.randrange(self.size)
@@ -68,4 +66,44 @@ def return_answer():
 	sc.combination(20)
 	return sc
 
-return_answer().show()
+def return_question_and_answer():
+	answer = return_answer()
+	size = answer.size
+	question = []
+	for i in xrange (size**2):
+			line = []
+			for j in xrange (size**2):
+				line.append(answer.board[i][j])
+			question.append(line)
+	visited = []
+	for i in xrange (size**2):
+		visited.append([0] * size**2)	
+	counter = 0
+	level = size**4
+
+	while counter < size**4:
+		i = random.randrange(size**2)
+		j = random.randrange(size**2)
+		if visited[i][j] == 0:
+			counter  += 1
+			visited[i][j] = 1
+			temp = question[i][j]
+			question[i][j] = 0
+			level -= 1
+			solution = []
+			for k in xrange (size**2):
+				solution.append(question[k][:])
+			solve = 0
+			for s in sudoku_solver.solve_sudoku((size, size), solution):
+				solve += 1
+			if solve != 1:
+				question[i][j] = temp
+				level += 1
+	for i in xrange (size**2):
+		print question[i]	 
+	print "Number of fulled cells = ", level
+	answer.show()	
+		
+	return question, answer
+
+return_question_and_answer()
