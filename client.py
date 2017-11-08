@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import curses
 import os
 from login import *
+from host_port_authorization import *
 buffer_length = 1024
 
 
@@ -46,17 +47,17 @@ if __name__ == '__main__':
     s = socket(AF_INET, SOCK_STREAM)
 
     while True:
-        inpt = raw_input("Enter dedicated host address [ip:port]: ")
-        host, port = inpt.split(":")
-        port = int(port)
-
-        if s.connect_ex( (host, port) ) != 0:
-            print "Incorrect host address. Try again!"
-
-        else:
-            print "Connection established!"
-            s.send(nick.encode())
-            break
+        #inpt = raw_input("Enter dedicated host address [ip:port]: ")
+        HP = HostPort()
+        hostPortAuthorization(HP)
+        host, port = HP.getHostPort()
+        if port.isdigit():
+            port = int(port)
+            if s.connect_ex( (host, port) ) != 0:
+                print "Incorrect host address. Try again!"
+            else:
+                print "Connection established!"
+                break
     
     print "Multiplayer Game"
     '''
