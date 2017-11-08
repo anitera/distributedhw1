@@ -15,7 +15,7 @@ authorizedNickname = ""
 class Nickname:
     def __init__(self):
         self.name = ""
-		self.passed = False
+        self.passed = False
     
     def setNickname(self, nickname):
         self.name = nickname
