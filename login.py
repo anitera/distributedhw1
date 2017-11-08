@@ -12,7 +12,7 @@ except ImportError:
 nicknames = []
 authorizedNickname = ""
 
-def send_data(listbox, nickname_entry):
+def send_data(listbox, nickname_entry, window):
     current = listbox.curselection()
     if current:
         nickname = listbox.get(current[0])
@@ -25,6 +25,7 @@ def send_data(listbox, nickname_entry):
         authorizedNickname = nickname
         print("Welcome,", nickname)
         tkBox.showinfo("Successful authorization!", "Authorization passed, try to connect to server")
+        window.destroy()
     else:
         print("Authorization doesn't pass")
         tkBox.showinfo("Invalid username!", "try login again")
@@ -37,15 +38,15 @@ def authorization(users_list):
     listbox_label_location_y = 10
     listbox_label_x = 10
     listbox_label_y = 30
-    nickname_label_x = 150
+    nickname_label_x = 200
     nickname_label_y = 30
-    nickname_x = 150
+    nickname_x = 200
     nickname_y = 60
-    button_x = 160
+    button_x = 220
     button_y = 130
     button_height = 4
     button_width = 15
-    window.geometry('300x200')
+    window.geometry('350x200')
     window.title('Authorization')
     listbox_text = tk.Label(text = "Choose nickname from list")
     listbox_text.place(x = listbox_label_location_x, y = listbox_label_location_y)
@@ -60,11 +61,9 @@ def authorization(users_list):
     nickname_text.place(x=nickname_label_x, y = nickname_label_y)
     nickname = tk.Entry()
     nickname.place(x=nickname_x, y=nickname_y)
-    b = tk.Button(window, text="Authorize", command=lambda: send_data(listbox, nickname))
+    b = tk.Button(window, text="Authorize", command=lambda: send_data(listbox, nickname, window))
     b.config(height = button_height, width = button_width)
     b.place(x=button_x, y=button_y)
-    if authorizedNickname:
-        return authorizedNickname
     window.mainloop()
 
 def validate_nickname(nickname):
@@ -92,10 +91,11 @@ def load_nicknames():
         return False
 
 def enter_nickname(load=True):
+    authorizedNickname = ""
     if load:
 	    load_nicknames()
-	nickname = authorization(nicknames)
-	return nickname
+    authorization(nicknames)
+    return authorizedNickname
 
 
 
