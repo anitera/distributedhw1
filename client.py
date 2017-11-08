@@ -30,10 +30,10 @@ if __name__ == '__main__':
         while True:
             opt = raw_input("Load nick? y/n ")
             if opt == "y":
-                nick = load_nickname()
+                nick = enter_nickname(True)
                 break
             if opt == "n":
-                nick = enter_nickname()
+                nick = enter_nickname(False)
                 break
             print "Wrong input! Enter \"y\" for Yes and \"n\" for No"
     else:
