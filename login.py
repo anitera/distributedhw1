@@ -32,7 +32,7 @@ def send_data(listbox, nickname_entry, window, nick):
         nickname = nickname_entry.get()
         print("Authorization...", nickname)
     if validate_nickname(nickname):
-	    nick.passed = True
+        nick.passed = True
         nick.setNickname(nickname)
         print("Welcome,", nickname)
         tkBox.showinfo("Successful authorization!", "Authorization passed, try to connect to server")
