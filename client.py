@@ -25,7 +25,8 @@ if __name__ == '__main__':
                         default='127.0.0.1')
     args = parser.parse_args()
     '''
-    nick = ""
+    nick = enter_nickname()
+    '''
     if (load_nicknames()):
         while True:
             opt = raw_input("Load nick? y/n ")
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     else:
         nick = enter_nickname()
                        
-
+    '''
     print "Your nickname: ", nick
     
     s = socket(AF_INET, SOCK_STREAM)
