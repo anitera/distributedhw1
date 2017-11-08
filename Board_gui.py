@@ -6,11 +6,11 @@ import numpy as np
 
 class Board():
     def __init__(self):
-        self.board = tkinter.Tk()
+        self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
         self.board_height = 10 * self.cell_size
-        w = tkinter.Canvas(self.board, width=self.board_width, height=self.board_height)
+        w = tk.Canvas(self.board, width=self.board_width, height=self.board_height)
         self.canvas = w
         self.board_matrix = [[1 for k in range(9)] for k in range(9)]
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'blue', 4: 'red', 5: 'black',
