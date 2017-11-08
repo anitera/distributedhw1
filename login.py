@@ -104,7 +104,7 @@ def enter_nickname(load=True):
     nick = Nickname()
     if load:
 	    load_nicknames()
-    authorization(nicknames)
+    authorization(nicknames, nick)
     return nick.getNickname()
 
 
