@@ -36,7 +36,7 @@ if __name__ == '__main__':
     session_size = 4
     
     # get current players and their score from session with dictionary table_score = { 'nickname': score}
-    table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya}
+    table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
 
     return_board(nick, host, port, session_id, session_size, table_score)
 
