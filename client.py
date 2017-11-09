@@ -4,45 +4,14 @@ import curses
 import os
 from login import *
 from host_port_authorization import *
+from Board_gui import *
 buffer_length = 1024
 
-def return_current_client(name, host, port, session):
-	return name, host, port, session
 
 if __name__ == '__main__':
-    '''
-    parser = ArgumentParser()
-    parser.add_argument('-n','--nickname',\
-                        help='nickname validation',\
-                        required=False
-                        )
-    parser.add_argument('-p','--port',\
-                        help='port',\
-                        default=7777,\
-                        required=False
-                        )
-    parser.add_argument('-H','--Host',\
-                        help='host',\
-                        required=False,\
-                        default='127.0.0.1')
-    args = parser.parse_args()
-    '''
+
     nick = enter_nickname()
-    '''
-    if (load_nicknames()):
-        while True:
-            opt = raw_input("Load nick? y/n ")
-            if opt == "y":
-                nick = enter_nickname(True)
-                break
-            if opt == "n":
-                nick = enter_nickname(False)
-                break
-            print "Wrong input! Enter \"y\" for Yes and \"n\" for No"
-    else:
-        nick = enter_nickname()
-                       
-    '''
+
     print "Your nickname: ", nick
     
     s = socket(AF_INET, SOCK_STREAM)
@@ -61,6 +30,18 @@ if __name__ == '__main__':
                 break
     
     print "Multiplayer Game"
+
+    # here we need to know id of our session and max number of clients
+    session_id = 0
+    session_size = 4
+    
+    # get current players and their score from session with dictionary table_score = { 'nickname': score}
+    table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya}
+
+    return_board(nick, host, port, session_id, session_size, table_score)
+
+
+
     '''
     s = socket(AF_INET, SOCK_STREAM)
 
