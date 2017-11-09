@@ -13,7 +13,6 @@ class Scale(object):
 			for j in xrange (size**2):
 				self.line.append((i*size + i//size + j) % (size**2) + 1)
 			self.board.append(self.line)
-		#print "This is base table"
 
 	def show(self):	
 		for i in xrange(self.size**2):
@@ -79,7 +78,6 @@ def return_question_and_answer():
 	for i in xrange (size**2):
 		visited.append([0] * size**2)	
 	counter = 0
-	level = size**4
 
 	while counter < size**4:
 		i = random.randrange(size**2)
@@ -89,7 +87,6 @@ def return_question_and_answer():
 			visited[i][j] = 1
 			temp = question[i][j]
 			question[i][j] = 0
-			level -= 1
 			solution = []
 			for k in xrange (size**2):
 				solution.append(question[k][:])
@@ -98,12 +95,5 @@ def return_question_and_answer():
 				solve += 1
 			if solve != 1:
 				question[i][j] = temp
-				level += 1
-	for i in xrange (size**2):
-		print question[i]	 
-	print "Number of fulled cells = ", level
-	answer.show()	
 		
-	return question, answer
-
-return_question_and_answer()
+	return question, answer.board
