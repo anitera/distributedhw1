@@ -6,7 +6,8 @@ from login import *
 from host_port_authorization import *
 buffer_length = 1024
 
-
+def return_current_client(name, host, port, session):
+	return name, host, port, session
 
 if __name__ == '__main__':
     '''
