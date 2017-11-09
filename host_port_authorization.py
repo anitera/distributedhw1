@@ -32,15 +32,15 @@ def sendPortHost(hostport_entry, window, hp):
     
 def hostPortAuthorization(HP):
     window = tk.Tk()
-    nickname_label_x = 50
+    nickname_label_x = 85
     nickname_label_y = 30
-    nickname_x = 50
+    nickname_x = 52
     nickname_y = 60
-    button_x = 50
+    button_x = 60
     button_y = 90
     button_height = 3
     button_width = 15
-    window.geometry('200x150')
+    window.geometry('265x150')
     window.resizable(width=False, height=False)
     window.title('Host - port authorization')
     hostPortText = tk.Label(text="Enter host:port")
