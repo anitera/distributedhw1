@@ -15,6 +15,12 @@ __sess_id_counter = 0
 
 
 
+#class Game_Session():
+
+ #   def __init__(self):
+        
+
+
 
 
 def new_session(source):
@@ -28,3 +34,4 @@ def new_session(source):
     __sess_id_counter += 1
     __S[source+(uuid,)] = {}
     return uuid
+
