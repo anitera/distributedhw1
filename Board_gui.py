@@ -6,9 +6,10 @@ except ImportError:
     from Tkinter import *
 import numpy as np
 from Generation import *
+from client import *
 
 class Board():
-    def __init__(self):
+    def __init__(self, nick, host, port, session_id, session_size, table_score):
         self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
@@ -18,6 +19,10 @@ class Board():
         self.board_matrix = [[1 for k in range(9)] for k in range(9)]
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
+	self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
+	self.lab = Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
+	self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
+	#some object with dictionary table_score
     
     def initialize_board(self):
         for i in range(9):
@@ -51,9 +56,10 @@ class Board():
                                   font="Times 20 italic bold",
                                   text=self.board_matrix[i][j])
 
-matrix_task, matrix_answer = return_question_and_answer()
-board = Board()
-board.initialize_board()
-board.set_board_numbers(matrix_task)
-board.draw_board_numbers()
-board.show_board()
+def return_board(nick, host, port, session_id, session_size, table_score):
+	matrix_task, matrix_answer = return_question_and_answer()
+	board = Board(nick, host, port, session_id, session_size, table_score)
+	board.initialize_board()
+	board.set_board_numbers(matrix_task)
+	board.draw_board_numbers()
+	board.show_board()

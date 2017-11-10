@@ -53,12 +53,12 @@ def authorization(users_list, nick):
     nickname_label_y = 30
     nickname_x = 200
     nickname_y = 60
-    button_x = 220
-    button_y = 130
+    button_x = 200
+    button_y = 150
     button_height = 4
     button_width = 15
-    window.geometry('350x200')
-    window.resizable(width=False, height=False)
+    window.geometry('370x300')
+    window.resizable(width=True, height=True)
     window.title('Authorization')
     listbox_text = tk.Label(text = "Choose nickname from list")
     listbox_text.place(x = listbox_label_location_x, y = listbox_label_location_y)
@@ -73,9 +73,14 @@ def authorization(users_list, nick):
     nickname_text.place(x=nickname_label_x, y = nickname_label_y)
     nickname = tk.Entry()
     nickname.place(x=nickname_x, y=nickname_y)
-    b = tk.Button(window, text="Authorize", command=lambda: send_data(listbox, nickname, window, nick))
+    BOLD = '\033[1m'
+    END = '\033[0m'
+    b = tk.Button(window, text=" Authorize ", command=lambda: send_data(listbox, nickname, window, nick))
+    a = tk.Button(window, text="Pick another \n session", command=lambda: send_data(listbox, nickname, window, nick))
+    a.config(height = button_height, width = button_width)
+    a.place(x=button_x, y=button_y - 50)
     b.config(height = button_height, width = button_width)
-    b.place(x=button_x, y=button_y)
+    b.place(x=button_x, y=button_y + 50)
     window.mainloop()
 
 def validate_nickname(nickname):
