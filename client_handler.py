@@ -19,10 +19,18 @@ class ClientHandler(Thread):
     def __handle(self):
         try:
             print "Client connected from %s:%d" % (self.__client_address)
-            #self.__session = new_session(self.__client_address)   #should be game session
-            #print "Session ", self.__session, " created"
 
-            nick = self.__client_socket.recv(self.buffer_size) 
+            initial_reply = self.__client_socket.recv(self.buffer_size) 
+	    print initial_reply
+
+            initial_reply = initial_reply.split()
+
+	    if initial_reply[0] == '0':
+		print 'Creating new session'
+		print 'initial_reply[2] ', initial_reply[2]
+		sess = Game_Session(int(initial_reply[2]))
+
+	    # if he created new session 0 - sess = Game_Session()
 
             # call function gamesession to add client name first time game_session new_player_in_current_session
             print "Client's nickname=", nick

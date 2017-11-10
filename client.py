@@ -32,8 +32,18 @@ if __name__ == '__main__':
     print "Multiplayer Game"
 
     # here we need to know id of our session and max number of clients
+    flag_of_new_session = True
+
     session_id = 0
     session_size = 4
+
+    if flag_of_new_session:
+	# s.send(('3' + args.size).encode('utf-8') + '\n' + str(size).encode('utf-8'))
+	print '0' + nick + str(session_size)
+	s.send('0' + ' ' + nick + ' ' + str(session_size))
+    else: 
+	s.send('1' + ' ' + nick + ' ' + str(session_id))
+ 
     
     # get current players and their score from session with dictionary table_score = { 'nickname': score}
     table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
