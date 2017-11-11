@@ -1,3 +1,4 @@
+import os
 try:
     import tkinter as tk
 except ImportError:
@@ -7,19 +8,29 @@ try:
     import tkMessageBox as tkBox
 except ImportError:
     from tkinter import messagebox as tkBox
-from sessions import *
+#from sessions import *
+
+sessions_list = []
+sessions_list_size = []
 
 class Session_Authorization:
-#     def __init__(self):
-#         self.host = ""
-#         self.port = ""
+    def __init__(self):
+        self.session_id = 0
+        self.session_size = 4
     
-#     def setHostPort(self, hostport):
-#         self.host = hostport[0]
-#         self.port = hostport[1]
+    def setSession_id_size(self, session_id, session_size):
+        self.session_id = session_id
+	self.session_size = session_size
+
+    def setSession_size(self, session_size):
+        self.session_id = session_id
+	self.session_size = session_size
         
-#     def getHostPort(self):
-#         return (self.host, self.port)
+    def getSession_id(self):
+        return self.session_id
+
+    def getSession_size(self):
+        return self.session_size
 
 # def sendPortHost(hostport_entry, window, hp):
 #     hostport_data = hostport_entry.get().split(":")
@@ -31,17 +42,19 @@ class Session_Authorization:
 #         tkBox.showinfo("Checking host and port", "Incorrect format of host:port")
 #         window.destroy()
 
-# ЦЕ ОСНОВА АЛЕ КОД ЩЕ НЕ ГОТОВИЙ!!! МАЮ ПИТАННЯ ... і хто на мене дується, вибачайте  p.s. Viktor
 
 def send_data_sessions(listbox, sessions , window, sess): 
     current = listbox.curselection()
     if current:
-        sessionname = listbox.get(current[0])
-        print("Connecting to...", sessionname)
+        print 'Decide to join existing session'
+        sessionsize = listbox.get(current[0])
+        print("Session size is...", sessionsize)
+	#return session_id
     else:
         sessionname = sessions.get()
         print("Connecting to...", sessionname)
-    if validate_nickname(sessionname):
+	#return session_size
+    if validate_session_size(sessionname):
         sess.passed = True
         sess.setNickname(sessionname)
         print("Welcome,", sessionname)
@@ -52,8 +65,16 @@ def send_data_sessions(listbox, sessions , window, sess):
         tkBox.showinfo("Session already booked", "try another session")
         sessions.delete(0, len(sessionname))
         sessions.insert(0, "")
+
+
+def validate_session_size(session_size):
+    if len(session_size) == 0 or ' ' in nickname or len(session_size) > 2 or isinstance( session_size, ( int, long ) ):
+        return False
+    else:
+        return True
+
     
-def sessionsAuthorization(sessions_list, sess):
+def sessionsAuthorization(sessions_list, sessions_list_size sess):
     window = tk.Tk()
     listbox_label_location_x = 10
     listbox_label_location_y = 10
@@ -95,10 +116,17 @@ def show_sessions():
 def load_sessions(): 
     if os.path.exists("sessions.ini"):
         with open("sessions.ini", "r+") as cli:
-            for id, sess in enumerate(cli.readlines()):
-                sess = sess[:-1]
-                sessions_list.append(sess)
-        
+	    session_content = cli.readlines()
+            session_content = [x.split() for x in session_content]
+	print 'session_content', session_content
+	#session_list.append()
+        for sess in session_content:
+	    print 'id', sess[0]
+	    print 'size', sess[1]
+	    #add session size later
+            sessions_list.append(sess[0])
+	    sessions_list_size.append(sess[1])
+        print 'list ', sessions_list
         show_sessions()
 
     if len(sessions_list) > 0:
@@ -106,8 +134,11 @@ def load_sessions():
     else:
         return False
 
-def sessionStart():
+def sessionStart(load=True):
+    session_chosen = Session_Authorization()
+    print 'session_chosen', session_chosen
     if load:
         load_sessions()
-    Session_Authorization.sessionsAuthorization(sessions_list, sess)
+    sessionsAuthorization(sessions_list, sessions_list_size, session_chosen)
+    return session_chosen.getSessionId()
 
