@@ -74,36 +74,51 @@ def validate_session_size(session_size):
         return True
 
     
-def sessionsAuthorization(sessions_list, sessions_list_size sess):
+def sessionsAuthorization(sessions, sess):
     window = tk.Tk()
+
     listbox_label_location_x = 10
     listbox_label_location_y = 10
     listbox_label_x = 10
     listbox_label_y = 30
+
     session_label_x = 200
     session_label_y = 30
     session_x = 200
     session_y = 60
+
+    number_label_x = 200
+    number_label_y = 35
+    number_x = 200
+    number_y = 40
+
     button_x = 200
     button_y = 150
-    button_height = 4
+    button_height = 3
     button_width = 15
+
     window.geometry('370x250')
     window.resizable(width=True, height=True)
     window.title('Authorization')
-    listbox_text = tk.Label(text = "Choose session from list")
+    listbox_text = tk.Label(text = "Join exesting session")
     listbox_text.place(x = listbox_label_location_x, y = listbox_label_location_y)
     listbox = tk.Listbox(window)
+
     sessions_counter = 0
     sessions_list = sorted(sessions_list) # Not neccessary
     for sessions in set(sessions_list):
         listbox.insert(sessions_counter, sessions)
         sessions_counter += 1
     listbox.place(x=listbox_label_x, y=listbox_label_y)
-    session_text = tk.Label(text="OR start your new session. \n Enter number of players:")
+    session_text = tk.Label(text="Create new one. \n Enter session name:")
     session_text.place(x=session_label_x, y = session_label_y)
+
     session = tk.Entry()
     session.place(x=session_x, y=session_y)
+    
+    number_of_players = tk.Entry()
+    number_of_players.place(x=number_x, y=number_y)
+
     a = tk.Button(window, text="Pick session", command=lambda: send_data_sessions(listbox, session, window, sess))
     a.config(height = button_height, width = button_width)
     a.place(x=button_x, y=button_y)
@@ -113,32 +128,24 @@ def show_sessions():
     for id, sess in enumerate(sessions_list):
         print id, sess
 
-def load_sessions(): 
-    if os.path.exists("sessions.ini"):
-        with open("sessions.ini", "r+") as cli:
-	    session_content = cli.readlines()
-            session_content = [x.split() for x in session_content]
-	print 'session_content', session_content
-	#session_list.append()
-        for sess in session_content:
-	    print 'id', sess[0]
-	    print 'size', sess[1]
-	    #add session size later
-            sessions_list.append(sess[0])
-	    sessions_list_size.append(sess[1])
-        print 'list ', sessions_list
+def load_sessions(sessions_list, sessions_size): 
+    content = (sessions_list, sessions_size)
+    print content
         show_sessions()
 
     if len(sessions_list) > 0:
-       return True
+        for id, sess in enumerate(sessions_list):
+        print id, sess
+        return True
     else:
+	print 'There are no sessions yet, please create new'
         return False
 
-def sessionStart(load=True):
-    session_chosen = Session_Authorization()
-    print 'session_chosen', session_chosen
+def sessionStart(sessions, load=True):
+    #session_chosen = Session_Authorization()
+    print 'session_chosen', sessions
     if load:
         load_sessions()
-    sessionsAuthorization(sessions_list, sessions_list_size, session_chosen)
+    sessionsAuthorization(sessions_list, sessions)
     return session_chosen.getSessionId()
 

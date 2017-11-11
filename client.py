@@ -37,6 +37,7 @@ if __name__ == '__main__':
     
     sessions  = pickle.loads(s.recv(buffer_length))
     print sessions
+    sessionStart(sessions)
     # here we need to know id of our session and max number of clients
     flag_of_new_session = True
     current_session = ""
@@ -57,7 +58,7 @@ if __name__ == '__main__':
         flag_of_new_session = True
 
     #session_id = 0
-   # session_size = 4
+    # session_size = 4
 
     if flag_of_new_session:
         sess_name = raw_input("input sess name ")
