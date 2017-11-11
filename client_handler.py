@@ -3,6 +3,7 @@ from protocol import *
 from socket import error as soc_err
 from sessions import *
 import time
+import pickle
 
 class ClientHandler(Thread):
     def __init__(self, client_socket, client_addr): #need to take as argument game_session_id
@@ -10,7 +11,12 @@ class ClientHandler(Thread):
         self.__client_socket = client_socket
         self.__client_address = client_addr
         self.buffer_size = 1024
+        self.sess_names = []
 	#self.game_session_id = game_session_id
+
+    def set_sessions(self, sess_names):
+        for id, name in enumerate(sess_names):
+            self.sess_names.append( (id,name ) )
 
     def run(self):
         self.__handle()
@@ -19,11 +25,17 @@ class ClientHandler(Thread):
     def __handle(self):
         try:
             print "Client connected from %s:%d" % (self.__client_address)
+            if len(self.sess_names) > 0:
+                self.__client_socket.send(pickle.dumps(self.sess_names, -1))
+                #self.__client_socket.send(DELIM.join([ x for x in self.sess_names]))
+            else:
+                self.__client_socket.send("None")
 
+                
             initial_reply = self.__client_socket.recv(self.buffer_size) 
 	    print initial_reply
 
-            initial_reply = initial_reply.split()
+            initial_reply = initial_reply.split(DELIM)
 
 	    if initial_reply[0] == '0':
 		print 'Creating new session'
@@ -31,12 +43,12 @@ class ClientHandler(Thread):
                 ''' creating new session using function
                 !!! do not use class creation !!!!
                 '''
-		sess = new_session(self.__client_address, int(initial_reply[2]))
-                print "Session created with token ", sess
+		sess = new_session(self.__client_address, int(initial_reply[2]), initial_reply[1])
+                print "Session ", sess.name, " created with token ", sess.token
 
-                self.__client_socket.send(sess)
-                
-
+                self.__client_socket.send(sess.token)
+                save_sessions() 
+            
 	    # if he created new session 0 - sess = Game_Session()
 
             # call function gamesession to add client name first time game_session new_player_in_current_session

@@ -1,6 +1,7 @@
 from socket import AF_INET, SOCK_STREAM, socket, SHUT_WR
 from argparse import ArgumentParser
 from client_handler import ClientHandler
+from sessions import load_sessions, save_sessions
 # Constants
 buffer_length = 1024
 
@@ -13,6 +14,7 @@ class Server():
         self.__s = socket(AF_INET, SOCK_STREAM)
         self.__s.bind(self.__sock_addr)
         self.__s.listen(self.__backlog)
+        self.sess_names = load_sessions()
         print "Socket %s:%d is in listning state" % ( self.__s.getsockname() )
 
     def start(self):
@@ -23,6 +25,8 @@ class Server():
                 print "waiting clients..."
                 client_socket, client_addr = self.__s.accept()
                 c = ClientHandler(client_socket, client_addr)
+                c.set_sessions(self.sess_names)
+                print "current sessions", self.sess_names
                 clients.append(c)
                 c.start()
         except KeyboardInterrupt:

@@ -1,6 +1,7 @@
 import binascii
 from Generation import * 
 import os
+import pickle
 # Constants -------------------------------------------------------------------
 ___NAME = 'Sessions Protocol'
 ___VER = '0.0.0.1'
@@ -45,6 +46,9 @@ class GameSession():
         #current players
         self.players = {}
 
+        #session name
+        self.name = {}
+
     def get_token(self):
         return self.token
 
@@ -57,12 +61,15 @@ class GameSession():
     def get_total(self):
         return self.sudoku_full
 
+    def set_name(self, name):
+        self.name = name
+
     def add_player(self, source):
         self.players[source] = 0
 
         
 
-def new_session(source, session_size):
+def new_session(source, session_size, name):
     '''Create new session, give it unique iD
     @param source: tuple ( ip, port ), socket address of the session originator
     @param session_size: max number of players in session
@@ -72,5 +79,29 @@ def new_session(source, session_size):
     sess = GameSession(session_size)
     token = sess.get_token()
     sess.add_player(source)
+    sess.set_name(name)
     S[token] = sess
-    return token
+    return sess
+
+def save_sessions():
+    global S
+    with open("sessions.bin", 'wb') as f:
+        pickle.dump(S, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_sessions():
+    global S
+    try:
+        with open('sessions.bin', 'rb') as handle:
+            S = pickle.load(handle)
+        if len(S) > 0:
+            print len(S), " session loaded!"
+            print S
+            sess_names = [ x.name for x in S.values() ]
+            return sess_names
+        else:
+            return []
+            print "No loaded sessions!"
+    except:
+        print "No session dump!"
+        return []
