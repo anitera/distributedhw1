@@ -70,4 +70,4 @@ def new_session(source):
     __sess_id_counter += 1
     __S[source+(uuid,)] = {}
     return uuid
- 
+

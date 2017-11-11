@@ -4,6 +4,7 @@ import curses
 import os
 from login import *
 from host_port_authorization import *
+from sessions_authorization import *
 from Board_gui import *
 buffer_length = 1024
 
@@ -28,7 +29,9 @@ if __name__ == '__main__':
             else:
                 print "Connection established!"
                 break
-    
+                
+    sessionStart()
+
     print "Multiplayer Game"
 
     # here we need to know id of our session and max number of clients
