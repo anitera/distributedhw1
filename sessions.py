@@ -1,6 +1,6 @@
-
+import binascii
 from Generation import * 
-
+import os
 # Constants -------------------------------------------------------------------
 ___NAME = 'Sessions Protocol'
 ___VER = '0.0.0.1'
@@ -8,12 +8,12 @@ ___DESC = 'Simple Sessions protocol (server-side)'
 ___BUILT = '2016-08-23'
 ___VENDOR = 'Copyright (c) 2016 DSLab'
 # Private variables -----------------------------------------------------------
-__M = [] # Received messages (array of tuples like ( ( ip, port), data)
-__S = {} # Sessions
-__OUTBOX = {}
-__INBOX = {}
-__sess_id_counter = 0
-g_c = 0
+M = [] # Received messages (array of tuples like ( ( ip, port), data)
+S = {} # Sessions
+OUTBOX = {}
+INBOX = {}
+sess_id_counter = 0
+
 
 
 #return_question_and_answer question (blank),answer (filled)
@@ -21,53 +21,57 @@ g_c = 0
 
 
 
-class Game_Session():
-
+class GameSession():
 
     def __init__(self, session_size):
-	'''Creating new session with specified size'''
-	global __sess_id_counter
-        global __S
-	global g_c
-        for i in range(10):
-            g_c += 1
-            print g_c
-	self.session_size = session_size
-	self.session_id = __sess_id_counter
-	
-	# call function from Generation.py
+	'''Creating new session with specified size
+        @param session_size: max number of players in session
+        '''
+	global sess_id_counter
+	self.size = session_size
+        #generate session token
+	self.token = binascii.hexlify(os.urandom(16))
+	sess_id_counter += 1
+	self.id = sess_id_counter
+        # call function from Generation.py
 	question, answer = return_question_and_answer()
+
+        #board
 	self.sudoku_full = answer
-	self.sudoku_current = question
 
-	# Update global variables
-	__sess_id_counter += 1
-	__S[source+(uuid,)] = {}
+        #current state
+	self.state = question
 
-    def return_session_id(self):
-	return self.session_id
+        #current players
+        self.players = {}
 
-    def return_session_size(self):
-	return self.session_size
+    def get_token(self):
+        return self.token
 
-    def return_sudoku_current(self):
-	return self.sudoku_current
+    def get_size(self):
+        return self.size
 
-    def return_sudoku_full(self):
-	return self.sudoku_full
+    def get_state(self):
+        return self.state
+
+    def get_total(self):
+        return self.sudoku_full
+
+    def add_player(self, source):
+        self.players[source] = 0
+
         
 
-
-
-def new_session(source):
+def new_session(source, session_size):
     '''Create new session, give it unique iD
     @param source: tuple ( ip, port ), socket address of the session originator
-    @returns int, new session iD
+    @param session_size: max number of players in session
+    @returns hex, session token
     '''
-    global __sess_id_counter
-    global __S
-    uuid = __sess_id_counter
-    __sess_id_counter += 1
-    __S[source+(uuid,)] = {}
-    return uuid
+    global S
+    sess = GameSession(session_size)
+    token = sess.get_token()
+    sess.add_player(source)
+    S[token] = sess
+    return token
  

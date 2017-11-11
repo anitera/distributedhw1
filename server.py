@@ -27,6 +27,7 @@ class Server():
                 c.start()
         except KeyboardInterrupt:
             print "Ctrl+C"
+            self.__s.close()
         finally:
             if client_socket != None:
                 client_socket.close()

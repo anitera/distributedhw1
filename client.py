@@ -44,7 +44,14 @@ if __name__ == '__main__':
     else: 
 	s.send('1' + ' ' + nick + ' ' + str(session_id))
  
-    
+
+    '''getting session token, save it in client side and always send message with it
+    because server should recognize for which session data incoming '''
+    #IDK WATA FUCK IS GOING ON BUT BUFFER ALWAYS END ON '1'
+    sess = s.recv(buffer_length)[:-1]
+
+    print "Starting session ", sess, " token"
+
     # get current players and their score from session with dictionary table_score = { 'nickname': score}
     table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
 

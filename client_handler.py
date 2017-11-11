@@ -28,12 +28,19 @@ class ClientHandler(Thread):
 	    if initial_reply[0] == '0':
 		print 'Creating new session'
 		print 'initial_reply[2] ', initial_reply[2]
-		sess = Game_Session(int(initial_reply[2]))
+                ''' creating new session using function
+                !!! do not use class creation !!!!
+                '''
+		sess = new_session(self.__client_address, int(initial_reply[2]))
+                print "Session created with token ", sess
+
+                self.__client_socket.send(sess)
+                
 
 	    # if he created new session 0 - sess = Game_Session()
 
             # call function gamesession to add client name first time game_session new_player_in_current_session
-            print "Client's nickname=", nick
+            #print "Client's nickname=", nick
 
             self.__client_socket.send(OK)
             while True:
