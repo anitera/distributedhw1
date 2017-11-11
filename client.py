@@ -4,7 +4,7 @@ import curses
 import os
 from login import *
 from host_port_authorization import *
-#from sessions_authorization import *
+from sessions_authorization import *
 from Board_gui import *
 buffer_length = 5024
 
@@ -37,7 +37,9 @@ if __name__ == '__main__':
     
     sessions  = pickle.loads(s.recv(buffer_length))
     print sessions
-    sessionStart(sessions)
+    s_ret = sessionStart(sessions)
+    print 'We return value yiiiii', s_ret[0]
+    print 'name ', s_ret[1]
     # here we need to know id of our session and max number of clients
     flag_of_new_session = True
     current_session = ""
