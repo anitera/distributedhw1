@@ -74,4 +74,3 @@ def new_session(source, session_size):
     sess.add_player(source)
     S[token] = sess
     return token
- 
