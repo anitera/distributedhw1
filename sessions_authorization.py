@@ -10,7 +10,7 @@ except ImportError:
     from tkinter import messagebox as tkBox
 
 
-def send_data_sessions(listbox, sessions, window, sess): 
+def send_data_sessions(listbox, sessions, number_of_players, window, sess): 
     print 'send data ', listbox, ' sess: ', sessions, ' sess: ', sess
     current = listbox.curselection()
     global sessionname_return
@@ -25,14 +25,15 @@ def send_data_sessions(listbox, sessions, window, sess):
 	
     else:
         sessionname = sessions.get()
+        sessionsize = number_of_players.get()
         print("Connecting to...", sessionname)
 	#return session_size
-        if validate_session_name_and_size(sessionname[1], sessionname[0]):
+        if validate_session_name_and_size(sessionname, sessionsize):
             print("Welcome,", sessionname)
             tkBox.showinfo("Connected!", "Have fun!")
             window.destroy()
-            sessionname_return = sessionname[1]
-            sessionsize_return = sessionname[0]
+            sessionname_return = sessionname
+            sessionsize_return = sessionsize
         else:
             print("CAN NOT CONNECT TO SESSION")
             tkBox.showinfo("Session already booked", "try another session")
@@ -97,7 +98,7 @@ def sessionStart(sessions):
     number_of_players = tk.Entry()
     number_of_players.place(x=number_x, y=number_y)
 
-    a = tk.Button(window, text="Pick session", command=lambda: send_data_sessions(listbox, session, window, sess))
+    a = tk.Button(window, text="Pick session", command=lambda: send_data_sessions(listbox, session, number_of_players, window, sess))
     a.config(height = button_height, width = button_width)
     a.place(x=button_x, y=button_y)
     window.mainloop()

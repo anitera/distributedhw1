@@ -57,6 +57,7 @@ class Board():
                                   text=self.board_matrix[i][j])
 
 def return_board(nick, host, port, session_id, session_size, table_score):
+        # we need to send here matrix question from session and table_score
 	matrix_task, matrix_answer = return_question_and_answer()
 	board = Board(nick, host, port, session_id, session_size, table_score)
 	board.initialize_board()
