@@ -1,9 +1,12 @@
 from socket import AF_INET, SOCK_STREAM, socket, SHUT_WR
 from argparse import ArgumentParser
 from client_handler import ClientHandler
-from sessions import load_sessions, save_sessions
+from sessions import load_sessions, save_sessions, current_sessions, cv_session
+from threading import Thread, Condition
 # Constants
 buffer_length = 1024
+
+
 
 
 class Server():
@@ -14,7 +17,10 @@ class Server():
         self.__s = socket(AF_INET, SOCK_STREAM)
         self.__s.bind(self.__sock_addr)
         self.__s.listen(self.__backlog)
-        self.sess_names = load_sessions()
+        self.sess_names = [] #load_sessions()
+      #  self.cv_sess = Condition()
+        sess_thread = Thread(target=self.session_updater)
+        sess_thread.start()
         print "Socket %s:%d is in listning state" % ( self.__s.getsockname() )
 
     def start(self):
@@ -26,7 +32,6 @@ class Server():
                 client_socket, client_addr = self.__s.accept()
                 c = ClientHandler(client_socket, client_addr)
                 c.set_sessions(self.sess_names)
-                print "current sessions", self.sess_names
                 clients.append(c)
                 c.start()
         except KeyboardInterrupt:
@@ -36,13 +41,21 @@ class Server():
             if client_socket != None:
                 client_socket.close()
             self.__s.close()
-
+        self.__s.close()
         map(lambda x: x.join(), clients)
+    
+    def session_updater(self):
+        with cv_session:
+            while True:
+                self.sess_names = current_sessions()
+                print "Current sessions"
+                print self.sess_names
+                cv_session.wait()
 
 if __name__ == '__main__':
 
     s = Server()
-    s.listen( ('127.0.0.1', 7777 ) )
+    s.listen( ('127.0.0.5', 7777 ) )
     s.start()
     '''
     parser = ArgumentParser()

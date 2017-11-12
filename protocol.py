@@ -4,4 +4,6 @@
 OK = "1"
 ERROR = "0"
 DELIM = ":"
-
+NEW_SESSION = "N"
+OLD_SESSION = "CH"
+DISCONNECT = "DC"

@@ -2,6 +2,8 @@ import binascii
 from Generation import * 
 import os
 import pickle
+from threading import Thread, Lock, Condition
+import time
 # Constants -------------------------------------------------------------------
 ___NAME = 'Sessions Protocol'
 ___VER = '0.0.0.1'
@@ -11,16 +13,98 @@ ___VENDOR = 'Copyright (c) 2016 DSLab'
 # Private variables -----------------------------------------------------------
 M = [] # Received messages (array of tuples like ( ( ip, port), data)
 S = {} # Sessions
+GH = {}
 OUTBOX = {}
 INBOX = {}
 sess_id_counter = 0
-
-
+cv_session = Condition()
+#from server import cv_session
 
 #return_question_and_answer question (blank),answer (filled)
 #
+def get_name(token):
+   
+    print "get name by token ", token
+    return GH[token].get_name()
+
+def add_player(token, nick, socket):
+    GH[token].add_player(nick, socket)
+
+def remove_player(token, nick, socket):
+    GH[token].remove_player(nick, socket)
+
+class Player():
+    def __init__(self, name, socket):
+        self.name = name
+        self.socket = socket
+
+    def get_name(self):
+        return self.name
+
+    def get_socket(self):
+        return self.socket
+
+    def send(self, data):
+        try:
+            self.socket.send(data)
+            return True
+        except:
+            print "cannot send data to player ", self.name
+            return False
 
 
+class GameHandler(Thread):
+
+    def __init__(self, GameSession):
+        Thread.__init__(self)
+        self.session = GameSession
+        self.players = {}
+        #self.lock_layers = Lock()
+        self.cv_players = Condition()
+        self.cv_turn = Condition()
+        #self.lock = Lock()
+        print "Game Session ", self.session.name, " started!"
+
+    def add_player(self, name, socket):
+        with self.cv_players:
+            self.players[name] =  socket
+            self.cv_players.notify()
+
+
+    def remove_player(self, name, socket):
+        with self.cv_players:
+            del self.players[name]
+            self.cv_players.notify()
+
+    def play_turn(self, point, value, player):
+        # TO DO 
+        self.cv_turn.notify()
+
+    def get_token(self):
+        return self.session.get_token()
+     
+    def get_name(self):
+        return self.session.get_name()
+
+    def run(self):
+        
+        with self.cv_players:
+            while True:    
+                if not len(self.players) == self.session.size:
+                    print "waiting players ", len(self.players), "/", self.session.size 
+                else:
+                    print "Enough players! Staring game..."
+                    break
+                self.cv_players.wait()
+        
+
+        self.cv_turn.acquire()
+        while len(self.players) > 0:
+           # check game state
+           print "Someone play turn"
+           self.cv_turn.wait()
+        print "No players left. Game session ", self.get_name()," closed!"
+        self.cv_turn.release()
 
 class GameSession():
 
@@ -43,9 +127,6 @@ class GameSession():
         #current state
 	self.state = question
 
-        #current players
-        self.players = {}
-
         #session name
         self.name = {}
 
@@ -63,11 +144,9 @@ class GameSession():
 
     def set_name(self, name):
         self.name = name
-
-    def add_player(self, source):
-        self.players[source] = 0
-
-        
+    
+    def get_name(self):
+        return self.name
 
 def new_session(source, session_size, name):
     '''Create new session, give it unique iD
@@ -75,19 +154,39 @@ def new_session(source, session_size, name):
     @param session_size: max number of players in session
     @returns hex, session token
     '''
-    global S
-    sess = GameSession(session_size)
-    token = sess.get_token()
-    sess.add_player(source)
-    sess.set_name(name)
-    S[token] = sess
-    return sess
+    global S, GH, cv_session
+    with cv_session:
+        sess = GameSession(session_size)
+        token = sess.get_token()
+        sess.set_name(name)
+        S[token] = sess
+        GH[token] = GameHandler(sess)
+        GH[token].start()
+        cv_session.notify()
 
-def save_sessions():
-    global S
-    with open("sessions.bin", 'wb') as f:
-        pickle.dump(S, f, pickle.HIGHEST_PROTOCOL)
+    
+    #print "Sess token ", token
+    return GH[token]
 
+def get_session(name):
+   
+    print "get session ", name
+    for k, v in GH.items():
+        if v.get_name() == name:
+            return GH[k]
+    
+def save_sessions(cv):
+    with cv:
+        global S
+        with open("sessions.bin", 'wb') as f:
+            pickle.dump(S, f, pickle.HIGHEST_PROTOCOL)
+    
+    cv.notify()
+
+
+def current_sessions():
+    sess_names = [ x.get_name() for x in GH.values() ] 
+    return sess_names
 
 def load_sessions():
     global S

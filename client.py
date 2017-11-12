@@ -6,6 +6,7 @@ from login import *
 from host_port_authorization import *
 from sessions_authorization import *
 from Board_gui import *
+import time
 buffer_length = 5024
 
 from protocol import *
@@ -37,13 +38,13 @@ if __name__ == '__main__':
     
     sessions  = pickle.loads(s.recv(buffer_length))
     print sessions
-    s_ret = sessionStart(sessions)
-    print 'We return value yiiiii', s_ret[0]
-    print 'name ', s_ret[1]
+    #s_ret = sessionStart(sessions)
+    #print 'We return value yiiiii', s_ret[0]
+    #print 'name ', s_ret[1]
     # here we need to know id of our session and max number of clients
-    flag_of_new_session = True
+    flag_of_new_session = False
     current_session = ""
-    if not sessions[0] == "None":
+    if len(sessions) > 0:
         print "Current session"
         for ss in sessions:
             print ss
@@ -51,8 +52,10 @@ if __name__ == '__main__':
         sess_name = raw_input("choose sess name or 0 to procceed: ")
         if sess_name == "0":
             print "create a new sesson"
+            flag_of_new_session = True
         else:
-            if sess_name in sessions:
+            snames = [x[1] for x in sessions ] 
+            if sess_name in snames:
                 current_session = sess_name
             else:
                 print "Session doesnt exist"
@@ -65,12 +68,13 @@ if __name__ == '__main__':
     if flag_of_new_session:
         sess_name = raw_input("input sess name ")
         sess_size = int (raw_input("input sess size") )
-        s.send(DELIM.join(["0", sess_name, str(sess_size), nick]))
+        s.send(DELIM.join([NEW_SESSION, sess_name, str(sess_size), nick]))
 	# s.send(('3' + args.size).encode('utf-8') + '\n' + str(size).encode('utf-8'))
 	#print '0' + nick + str(session_size)
 	#s.send('0' + ' ' + nick + ' ' + str(session_size))
     else: 
-        pass
+        print "Session=", current_session, " Nick=", nick
+        s.send(DELIM.join([OLD_SESSION, current_session, nick]))
 	#s.send('1' + ' ' + nick + ' ' + str(session_id))
  
 
@@ -78,10 +82,19 @@ if __name__ == '__main__':
     because server should recognize for which session data incoming
     '''
     #IDK WATA FUCK IS GOING ON BUT BUFFER ALWAYS END ON '1'
-    sess = s.recv(buffer_length)[:-1]
+    try:
+        sess = s.recv(buffer_length)
+        print "Session token ", sess
+    except:
+        print "socket errot"
 
-    print "Starting session ", sess, " token"
-
+    try:
+        while True:
+            print "playing.."
+            time.sleep(10)
+    except KeyboardInterrupt:
+        s.send(DISCONNECT)
+        s.close()
     # get current players and their score from session with dictionary table_score = { 'nickname': score}
     table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
 
@@ -98,7 +111,7 @@ if __name__ == '__main__':
     try:
         s.send(args.nickname)
     except socket.error:
-        print 'Socket error'
+        #print 'Socket error'
     try:
         message = s.recv(buffer_length) 
     except socket.error:
