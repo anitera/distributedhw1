@@ -4,25 +4,36 @@ try:
 except ImportError:
     import Tkinter as tk
     from Tkinter import *
+
+try:
+    import tkMessageBox as tkBox
+except ImportError:
+    from tkinter import messagebox as tkBox	
+	
 import numpy as np
 from Generation import *
 from client import *
 
 class Board():
-    def __init__(self, nick, host, port, session_id, session_size, table_score):
+    def __init__(self, nick, host, port, session_id, session_size, table_score, matrix=None):
         self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
         self.board_height = 9 * self.cell_size
         w = tk.Canvas(self.board, width=self.board_width, height=self.board_height)
         self.canvas = w
-        self.board_matrix = [[1 for k in range(9)] for k in range(9)]
+        if matrix:
+            self.board_matrix = matrix
+        else:
+            self.board_matrix = [[0 for k in range(9)] for k in range(9)]
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
-	self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
-	self.lab = Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
-	self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
-	#some object with dictionary table_score
+        self.initialize_board()
+        self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
+        self.lab = tk.Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
+        self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
+        self.last_move = (0, (0, 0))
+        #some object with dictionary table_score
     
     def initialize_board(self):
         for i in range(9):
@@ -46,6 +57,31 @@ class Board():
     def set_board_numbers(self, matrix):
         self.board_matrix = matrix
         
+    def EnterVal(self, e, a, b, ent):
+        value = e.get()
+        if value in [str(i) for i in range(1,10)]:
+            self.last_move = (value, (a, b))
+            tkBox.showinfo("Thanks", "Your move is proceed")
+            ent.destroy()
+        else:
+            tkBox.showerror("Incorrect format", "Please enter number from 1 to 9")
+    
+    def Click(self, x):
+        cell_column = (x.x) // self.cell_size
+        cell_row = (x.y) // self.cell_size
+        enter_number = tk.Tk()
+        enter_number.resizable(width=False, height=False)
+        lab = tk.Label(enter_number, text = "Please, enter number that you want\n to put on " + str(cell_column) +
+                       "-th column and " + str(cell_row) + "-th row",
+                       justify = 'right', fg = 'navy', font=('Helvetica', 14))
+        lab.pack()
+        entry_number = tk.Entry(enter_number)
+        entry_number.pack()
+        button1 = tk.Button(enter_number, text = "Proceed",
+                            command=lambda: self.EnterVal(entry_number, cell_column, cell_row, enter_number))
+        button1.pack()
+        #enter_number.mainloop()
+        
     def draw_board_numbers(self):
         for i in range(len(self.board_matrix)):
             for j in range(len(self.board_matrix[0])):
@@ -55,6 +91,13 @@ class Board():
                                             fill = self.numbers_dict[int(self.board_matrix[i][j])],
                                   font="Times 20 italic bold",
                                   text=self.board_matrix[i][j])
+                else:
+                    self.canvas.create_text(i * self.cell_size + self.cell_size / 2,
+                                            j * self.cell_size + self.cell_size / 2, activefill = 'olive',
+                                            fill = "black",
+                                  font="Times 20 italic bold",
+                                  text="?", tags='clickable')
+        self.canvas.tag_bind('clickable', '<Button-1>', self.Click)
 
 def return_board(nick, host, port, session_id, session_size, table_score):
         # we need to send here matrix question from session and table_score
