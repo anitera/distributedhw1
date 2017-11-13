@@ -19,6 +19,7 @@ OUTBOX = {}
 INBOX = {}
 sess_id_counter = 0
 cv_session = Condition()
+lc_message = Lock()
 #from server import cv_session
 
 #return_question_and_answer question (blank),answer (filled)
@@ -60,19 +61,21 @@ class GameHandler(Thread):
         Thread.__init__(self)
         self.session = GameSession
         self.players = {}
+        self.scores = {}
         #self.lock_layers = Lock()
         self.cv_players = Condition()
         self.cv_turn = Condition()
 
         self.game = False
         self.m_game = Lock()
-
+        self.m_update = Lock()
         #self.lock = Lock()
         print "Game Session ", self.session.name, " started!"
 
     def add_player(self, name, socket):
         with self.cv_players:
             self.players[name] =  socket
+            self.scores[name] = 0
             self.cv_players.notify()
 
 
@@ -81,10 +84,6 @@ class GameHandler(Thread):
             del self.players[name]
             print "player ", name, " disconected"
             self.cv_players.notify()
-
-    def play_turn(self, point, value, player):
-        # TO DO 
-        self.cv_turn.notify()
 
     def get_token(self):
         return self.session.get_token()
@@ -100,11 +99,43 @@ class GameHandler(Thread):
     def play_turn(self, cell, value, name):
         with self.cv_turn:
             print "player ", name, " place ", value, " in cell ", cell
+            with self.m_update:
+                self.scores[name] += 1
             self.cv_turn.notify()
     
     def send_to_players(self, data):
         for k, v in self.players.items():
             v.send(data)
+
+
+    def update_clients_boards(self):
+        with self.m_update:
+            state = self.session.get_state()
+            #print "sending state"
+           # print state
+            for k, v in self.players.items():
+               # print "sending for player ", k
+                v.send(pickle.dumps(state, -1) )
+
+    def update_clients_scores(self):
+        with self.m_update:
+            scores = self.scores
+            print "sending scores"
+            print scores
+            for k,v in self.players.items():
+                print "sending for player ", k
+                v.send(pickle.dumps(scores, -1) )
+
+    def update_game(self):
+        print "updating game"
+        with lc_message:
+            buff = 1024
+            for k,v in self.players.items():
+                print "send ", k, " updating request"
+                v.send(UPDATE_GAME)
+        time.sleep(1)    
+        self.update_clients_boards()
+        self.update_clients_scores()
 
     def run(self):
         
@@ -118,16 +149,22 @@ class GameHandler(Thread):
                         self.game = True
                     break
                 self.cv_players.wait()
-
+        
+        
         self.observer = Thread(target=self.game_observer )
         self.observer.start()
+        
+        self.update_game()
+       
         with self.cv_turn:
             while True:
                 with self.m_game:
                     status = self.game
                 if status == True:
-                    print "checking game state..."
                     self.cv_turn.wait()
+                    print "checking game state..."
+                    self.update_game()
+        
                 else:
                     print "game done!"
                     break

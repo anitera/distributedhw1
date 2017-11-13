@@ -55,7 +55,7 @@ class Server():
 if __name__ == '__main__':
 
     s = Server()
-    s.listen( ('127.0.0.56', 7777 ) )
+    s.listen( ('127.0.0.36', 7777 ) )
     s.start()
     '''
     parser = ArgumentParser()

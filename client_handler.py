@@ -1,7 +1,7 @@
 from threading import Thread
 from protocol import *
 from socket import error as soc_err
-from sessions import new_session, get_session
+from sessions import new_session, get_session, lc_message
 import time
 import pickle
 
@@ -75,14 +75,19 @@ class ClientHandler(Thread):
 
             # call function gamesession to add client name first time game_session new_player_in_current_session
             #print "Client's nickname=", nick
-            self.__client_socket.send(sess.get_token())
+            with lc_message:
+                self.__client_socket.send(sess.get_token())
 
             while True:
                 if sess.get_status() == True:
-                    print "send client ", GAME_START
-                    self.__client_socket.send(GAME_START)
+                    '''
+                    with lc_message:
+                        print "send client ", GAME_START
+                        self.__client_socket.send(GAME_START)
+                    '''
                     break
-
+            print "game loading..."
+            time.sleep(10)
             #print "send token ", sess_token
             #self.__client_socket.send(sess_token)
             while True:
@@ -96,12 +101,14 @@ class ClientHandler(Thread):
                     cell = (resp[1], resp[2])
                     value = resp[3]
                     sess.play_turn(cell, value, nick)
-
+                if resp[0] == UPDATE_GAME:
+                    continue
                 if resp[0] == DISCONNECT:
                     break
+
                 #receive answer from client: (i,j) 8
 		#game_session solver(name, client_answer) - there check if it solved if yes return message
-                time.sleep(1)
+                #time.sleep(1)
 		#send table_score to client and/or message
 
         except soc_err as e:

@@ -23,12 +23,30 @@ class GamePlaying():
         self.buffer_size = 1024
         self.game = True
         self.l_game = Lock()
+        self.state = None
+        self.scores = None
 
-    def get_state(self):
+    def update_state(self, state):
+        print "state updated"
+        self.state=state
+
+    def update_scores(self, scores):
+        print "scores updated"
+        self.scores=scores
+    def update_game(self):
+        state = pickle.loads(self.s.recv(buffer_length))
+        scores = pickle.loads(self.s.recv(buffer_length))
+        self.update_state(state)
+        self.update_scores(scores)
+        self.s.send(DELIM.join([UPDATE_GAME]) )
+        print "Scores"
+        print self.scores
+
+    def get_status(self):
         with self.l_game:
             status = self.game
         return status
-
+    
     def run(self):
         self.playing = Thread(target=self.playing_game)
         self.listeting = Thread(target=self.listeting_server)
@@ -52,12 +70,12 @@ class GamePlaying():
             with self.l_game:
                 status = self.game
             if status == True:
-                print "playing.."
-                time.sleep(10)
+                time.sleep(random.randint(10,30))
+                print self.nick, " playing turn"
                 cell = list([random.randint(1,9), random.randint(1,9)])
                 value = random.randint(1,9)
                 data = DELIM.join([PLAY_TURN,str(cell[0]), str(cell[1]), str(value)] )
-                s.send(data)
+                self.s.send(data)
             else:
                 print "game over"
                 break
@@ -74,6 +92,8 @@ class GamePlaying():
                         self.game = False
                     print "game ended from server!"
                     break
+                if msg[0] == UPDATE_GAME:
+                    self.update_game()
             else:
                 break
 
@@ -165,18 +185,39 @@ if __name__ == '__main__':
     except:
         print "socket errot"
 
-
+    '''
     rspn = s.recv(buffer_length)
     
     if rspn == GAME_START:
         print "session started"
+        s.send(OK)
     else:
         print "session error"
-    
-    
-    
-    game = GamePlaying(s, nick)
+    '''
 
+    rspn = s.recv(buffer_length)
+    board = None
+    scores = None
+    if rspn == UPDATE_GAME:
+        
+        board = pickle.loads(s.recv(buffer_length) )
+
+        print "BOARD FOR GAME"
+        print board
+
+        scores = pickle.loads(s.recv(buffer_length) )
+
+        print "SCORES"
+        print scores
+        s.send(DELIM.join([UPDATE_GAME]))
+    else:
+        print "wrong request"
+        print rspn
+
+    game = GamePlaying(s, nick)
+    game.update_state(board)
+    game.update_scores(scores)
+    time.sleep(random.randint(10,20))
     game.run()
 
     while True:
@@ -184,7 +225,7 @@ if __name__ == '__main__':
         if exit == 1:
             game.close()
             break
-        elif game.get_state() == False:
+        elif game.get_status() == False:
             game.close()
             break
     print "Thank you for playing!" 
