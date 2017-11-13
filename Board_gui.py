@@ -11,11 +11,12 @@ except ImportError:
     from tkinter import messagebox as tkBox	
 	
 import numpy as np
+import operator
 from Generation import *
 from client import *
 
 class Board():
-    def __init__(self, nick, host, port, session_id, session_size, table_score, matrix=None):
+    def __init__(self, nick, host, port, session_id, session_size, table_score, matrix=None, table=None):
         self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
@@ -26,6 +27,12 @@ class Board():
             self.board_matrix = matrix
         else:
             self.board_matrix = [[0 for k in range(9)] for k in range(9)]
+        if table:
+            self.table = table
+        else:
+            self.table = dict()
+            self.table[nick] = table_score
+        self.draw_table_score()
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
         self.initialize_board()
@@ -34,6 +41,7 @@ class Board():
         self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
         self.last_move = (0, (0, 0))
         #some object with dictionary table_score
+    
     
     def initialize_board(self):
         for i in range(9):
@@ -98,6 +106,24 @@ class Board():
                                   font="Times 20 italic bold",
                                   text="?", tags='clickable')
         self.canvas.tag_bind('clickable', '<Button-1>', self.Click)
+        
+    def draw_table_score(self):
+        self.table_score_listbox = tk.Listbox(self.board)
+        self.table_score_listbox.place(x = int(11.5 * self.cell_size), y = int(3 * self.cell_size))
+        table_name = tk.Label(self.board, text="NAME    SCORE",fg = 'navy', font=('Helvetica', 13))
+        table_name.place(x = int(11.5 * self.cell_size), y = int(2.6 * self.cell_size))
+        users_counter = 0
+        sorted_table = sorted((self.table).items(), key=operator.itemgetter(1), reverse=True)
+        n = 32 # maximum length of nickname (used to make table better visually)
+        for nick in sorted_table:
+            s = ""
+            for i in range(n - len(nick[0])):
+                s += " "
+            self.table_score_listbox.insert(users_counter, str(nick[0]) + s + str(nick[1]))
+            users_counter += 1
+            
+    def set_table(self, table):
+        self.table = table
 
 def return_board(nick, host, port, session_id, session_size, table_score):
         # we need to send here matrix question from session and table_score
