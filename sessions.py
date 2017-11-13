@@ -4,6 +4,7 @@ import os
 import pickle
 from threading import Thread, Lock, Condition
 import time
+from protocol import *
 # Constants -------------------------------------------------------------------
 ___NAME = 'Sessions Protocol'
 ___VER = '0.0.0.1'
@@ -62,6 +63,10 @@ class GameHandler(Thread):
         #self.lock_layers = Lock()
         self.cv_players = Condition()
         self.cv_turn = Condition()
+
+        self.game = False
+        self.m_game = Lock()
+
         #self.lock = Lock()
         print "Game Session ", self.session.name, " started!"
 
@@ -74,6 +79,7 @@ class GameHandler(Thread):
     def remove_player(self, name, socket):
         with self.cv_players:
             del self.players[name]
+            print "player ", name, " disconected"
             self.cv_players.notify()
 
     def play_turn(self, point, value, player):
@@ -86,6 +92,20 @@ class GameHandler(Thread):
     def get_name(self):
         return self.session.get_name()
 
+    def get_status(self):
+        with self.m_game:
+            status = self.game
+        return status
+
+    def play_turn(self, cell, value, name):
+        with self.cv_turn:
+            print "player ", name, " place ", value, " in cell ", cell
+            self.cv_turn.notify()
+    
+    def send_to_players(self, data):
+        for k, v in self.players.items():
+            v.send(data)
+
     def run(self):
         
         with self.cv_players:
@@ -94,17 +114,40 @@ class GameHandler(Thread):
                     print "waiting players ", len(self.players), "/", self.session.size 
                 else:
                     print "Enough players! Staring game..."
+                    with self.m_game:
+                        self.game = True
                     break
                 self.cv_players.wait()
-        
 
-        self.cv_turn.acquire()
-        while len(self.players) > 0:
-           # check game state
-           print "Someone play turn"
-           self.cv_turn.wait()
-        print "No players left. Game session ", self.get_name()," closed!"
-        self.cv_turn.release()
+        self.observer = Thread(target=self.game_observer )
+        self.observer.start()
+        with self.cv_turn:
+            while True:
+                with self.m_game:
+                    status = self.game
+                if status == True:
+                    print "checking game state..."
+                    self.cv_turn.wait()
+                else:
+                    print "game done!"
+                    break
+        
+        self.send_to_players(GAME_END)
+        print "Player ", self.players.keys(), " win!"
+        print "Game session ", self.get_name()," closed!"
+
+    def game_observer(self):
+        while True:
+            with self.cv_players:
+                print "players remain ", len(self.players)
+                if len(self.players) == 1:
+                    with self.cv_turn:
+                        with self.m_game:
+                            self.game = False
+                        self.cv_turn.notify()
+                    break
+                self.cv_players.wait()
+        print "no players left"
 
 class GameSession():
 

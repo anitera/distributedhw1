@@ -11,6 +11,77 @@ buffer_length = 5024
 
 from protocol import *
 import pickle
+import random
+from threading import Thread, Lock
+
+class GamePlaying():
+
+    def __init__(self, socket, nick):
+        self.s = socket
+        self.nick = nick
+        self.buffer_size = 1024
+        self.game = True
+        self.l_game = Lock()
+
+
+    def run(self):
+        try:
+            self.playing = Thread(target=self.playing_game)
+            self.listeting = Thread(target=self.listeting_server)
+            self.playing.start()
+            self.listeting.start()
+
+            self.listeting.join()
+            self.playing.join()
+        except KeyboardInterrupt:
+            s.send(DELIM.join([DISCONNECT]))
+            s.close()
+            with self.l_game:
+                self.game = False
+            self.listeting.join()
+            self.playing.join()
+    def close(self):
+        with self.l_game:
+            self.game = False
+        self.listeting.join()
+        self.playing.join()
+            
+
+    def playing_game(self):
+        try:
+            while True:
+                with self.l_game:
+                    status = self.game
+                if status == True:
+                    print "playing.."
+                    time.sleep(10)
+                    cell = list([random.randint(1,9), random.randint(1,9)])
+                    value = random.randint(1,9)
+                    data = DELIM.join([PLAY_TURN,str(cell[0]), str(cell[1]), str(value)] )
+                    s.send(data)
+                else:
+                    print "game over"
+                    break
+        except KeyboardInterrupt:
+            s.send(DELIM.join([DISCONNECT]))
+            s.close()
+
+    def listeting_server(self):
+        while True:
+            with self.l_game:
+                status = self.game
+            if status == True:
+                msg = self.s.recv(self.buffer_size).split(DELIM)
+                if msg[0] == GAME_END:
+                    with self.l_game:
+                        self.game = False
+                    print "game ended from server!"
+                    break
+            else:
+                break
+
+
+
 if __name__ == '__main__':
 
     nick = enter_nickname()
@@ -81,22 +152,42 @@ if __name__ == '__main__':
     '''getting session token, save it in client side and always send message with it
     because server should recognize for which session data incoming
     '''
-    #IDK WATA FUCK IS GOING ON BUT BUFFER ALWAYS END ON '1'
     try:
         sess = s.recv(buffer_length)
         print "Session token ", sess
     except:
         print "socket errot"
 
+
+    rspn = s.recv(buffer_length)
+    
+    if rspn == GAME_START:
+        print "session started"
+    else:
+        print "session error"
+    
+
+    try:
+        game = GamePlaying(s, nick)
+        game.run()
+    except KeyboardInterrupt:
+        game.close()
+
+    '''
     try:
         while True:
             print "playing.."
             time.sleep(10)
+            cell = list([random.randint(1,9), random.randint(1,9)])
+            value = random.randint(1,9)
+            data = DELIM.join([PLAY_TURN,str(cell[0]), str(cell[1]), str(value)] )
+            s.send(data)
     except KeyboardInterrupt:
-        s.send(DISCONNECT)
+        s.send(DELIM.join([DISCONNECT]))
         s.close()
+    '''
     # get current players and their score from session with dictionary table_score = { 'nickname': score}
-    table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
+  #  table_score = {'olha': 0, 'slava': 0, 'rita': 0, 'vasya': 0}
 
 #    return_board(nick, host, port, session_id, session_size, table_score)
 
