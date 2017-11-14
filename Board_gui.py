@@ -31,7 +31,7 @@ class Board():
             self.table = table
         else:
             self.table = dict()
-            self.table[nick] = table_score
+            self.table[nick] = 0
         self.draw_table_score()
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
