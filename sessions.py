@@ -104,14 +104,12 @@ class GameHandler(Thread):
             #check if cell is equal board_ans = session.get_total()
             board_ans = session.get_total()
             print 'matrix ',board_ans[i][j], 'i ', i, 'j ', j
-            if value == board_ans[i][j]:
-                with self.m_update:
-                    self.scores[name] += 1
-                self.cv_turn.notify()
-            else: 
-                with self.m_update:
+	    with self.m_update:
+                if value == board_ans[i][j]:
+                    self.scores[name] += 1           
+                else: 
                     self.scores[name] -= 1
-                self.cv_turn.notify()
+            self.cv_turn.notify()
     
     def send_to_players(self, data):
         for k, v in self.players.items():
