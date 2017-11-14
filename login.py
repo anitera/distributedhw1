@@ -32,6 +32,9 @@ def send_data(listbox, nickname_entry, window, nick):
         nickname = nickname_entry.get()
         print("Authorization...", nickname)
     if validate_nickname(nickname):
+        if not current:
+            with open("client.ini", "a") as cli:
+                cli.write(nickname + "\n")			
         nick.passed = True
         nick.setNickname(nickname)
         print("Welcome,", nickname)
