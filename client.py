@@ -103,6 +103,10 @@ class GamePlaying():
                     with self.l_game:
                         self.game = False
                     print "game ended from server!"
+
+                    winner = self.s.recv(self.buffer_size)
+
+                    print "winner: ", winner
                     break
                 if msg[0] == UPDATE_GAME:
                     self.update_game()

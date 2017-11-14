@@ -5,6 +5,7 @@ import pickle
 from threading import Thread, Lock, Condition
 import time
 from protocol import *
+import operator
 # Constants -------------------------------------------------------------------
 ___NAME = 'Sessions Protocol'
 ___VER = '0.0.0.1'
@@ -102,15 +103,18 @@ class GameHandler(Thread):
             i = int(cell[0])
             j = int(cell[1])
             #check if cell is equal board_ans = session.get_total()
-            board_ans = session.get_total()
-            print 'matrix ',board_ans[i][j], 'i ', i, 'j ', j
+            #board_ans = session.get_total()
+            #print 'matrix ',board_ans[i][j], 'i ', i, 'j ', j
 	    with self.m_update:
-                if value == board_ans[i][j]:
-                    self.scores[name] += 1           
+                if self.session.check_cell(cell, value) == True:
+                    self.scores[name] += 1
+                    self.session.set_cell(cell, value)
                 else: 
                     self.scores[name] -= 1
             self.cv_turn.notify()
-    
+    def game_over(self):
+        return self.session.game_over()
+
     def send_to_players(self, data):
         for k, v in self.players.items():
             v.send(data)
@@ -172,13 +176,26 @@ class GameHandler(Thread):
                     self.cv_turn.wait()
                     print "checking game state..."
                     self.update_game()
+
+                    if self.game_over() == True:
+                        break
         
                 else:
                     print "game done!"
                     break
         
         self.send_to_players(GAME_END)
-        print "Player ", self.players.keys(), " win!"
+        winner = ""
+        if len(self.players) > 0:
+            winner = max(self.players.iteritems(), key=operator.itemgetter(1))[0]
+        else:
+            winner = self.players.keys()
+        
+        
+        print "Player ", winner, " win!"
+
+        self.send_to_players(winner)
+
         print "Game session ", self.get_name()," closed!"
 
     def game_observer(self):
@@ -235,6 +252,21 @@ class GameSession():
     
     def get_name(self):
         return self.name
+
+    def set_cell(self, cell, value):
+        self.state[cell[0], cell[1]] = value
+    
+    def check_cell(self, cell, value):
+        if self.sudoku_full[cell[0], cell[1]] == value:
+            return True
+        else:
+            return False
+
+    def game_over(self):
+        if self.sudoku_full == self.state:
+            return True
+        else:
+            return False
 
 def new_session(source, session_size, name):
     '''Create new session, give it unique iD
