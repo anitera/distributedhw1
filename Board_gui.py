@@ -14,6 +14,17 @@ import numpy as np
 import operator
 from Generation import *
 from client import *
+from threading import RLock
+
+
+lc_cell = RLock()
+g_cell = (0, (0,0) )
+
+def get_gcell():
+    tmp = None
+    with lc_cell:
+        tmp = g_cell
+    return tmp
 
 class Board():
     def __init__(self, nick, matrix=None, table=None, finished=False):
@@ -38,6 +49,7 @@ class Board():
         self.last_move = (0, (0, 0))
         self.finished = finished
         #some object with dictionary table_score
+        self.v = tk.IntVar()
     
     def initialize_frame(self):
         self.lab = tk.Label(self.frame, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
@@ -66,19 +78,29 @@ class Board():
         self.board_matrix = matrix
         
     def get_last_move(self):
+        #with cv_cell:
         return self.last_move
     
     def EnterVal(self, e, a, b, ent):
         value = e.get()
         if value in [str(i) for i in range(1,10)]:
+        
             self.last_move = (value, (a, b))
+            global lc_cell, g_cell
+            with lc_cell:
+                print "put into g_cell"
+                g_cell = self.last_move
+                print "g_cell=", g_cell
+
+
             tkBox.showinfo("Thanks", "Your move is proceed")
             ent.destroy()
             self.canvas.delete("all")
             self.frame.quit()
         else:
             tkBox.showerror("Incorrect format", "Please enter number from 1 to 9")
-    
+    def get_val(self):
+        return self.v.get()
     def Click(self, x):
         cell_column = (x.x) // self.cell_size
         cell_row = (x.y) // self.cell_size

@@ -70,6 +70,7 @@ class GameHandler(Thread):
         self.game = False
         self.m_game = Lock()
         self.m_update = Lock()
+        self.lc_sess = Lock()
         #self.lock = Lock()
         print "Game Session ", self.session.name, " started!"
 
@@ -87,10 +88,16 @@ class GameHandler(Thread):
             self.cv_players.notify()
 
     def get_token(self):
-        return self.session.get_token()
+        tkn = None
+        with self.lc_sess:
+            tkn = self.session.get_token()
+        return tkn
      
     def get_name(self):
-        return self.session.get_name()
+        name = ""
+        with self.lc_sess:
+            name = self.session.get_name()
+        return name
 
     def get_status(self):
         with self.m_game:
@@ -103,17 +110,28 @@ class GameHandler(Thread):
             i = int(cell[0])
             j = int(cell[1])
             #check if cell is equal board_ans = session.get_total()
-            #board_ans = session.get_total()
-            #print 'matrix ',board_ans[i][j], 'i ', i, 'j ', j
+            board_ans = None
+            with self.lc_sess:
+                board_ans = self.session.get_total()
+            print 'matrix=',board_ans[i][j], '(', i, ',', j,')'
+            print 'value=', value
 	    with self.m_update:
-                if self.session.check_cell(cell, value) == True:
+                print "checking cell..."
+                #act =  None
+                #with self.lc_sess:
+                 #   act = self.session.check_cell(cell,value)
+                if board_ans == value:
                     self.scores[name] += 1
-                    self.session.set_cell(cell, value)
+                    #self.session.set_cell(cell, value)
                 else: 
                     self.scores[name] -= 1
+            print "turn played"
             self.cv_turn.notify()
     def game_over(self):
-        return self.session.game_over()
+        st = None
+        with self.lc_sess:
+            st = self.session.game_over()
+        return st
 
     def send_to_players(self, data):
         for k, v in self.players.items():
@@ -122,7 +140,9 @@ class GameHandler(Thread):
 
     def update_clients_boards(self):
         with self.m_update:
-            state = self.session.get_state()
+            state = None
+            with self.lc_sess:
+                state = self.session.get_state()
             #print "sending state"
            # print state
             for k, v in self.players.items():
@@ -254,10 +274,12 @@ class GameSession():
         return self.name
 
     def set_cell(self, cell, value):
-        self.state[cell[0], cell[1]] = value
+        self.state[cell[0]][cell[1]] = value
     
     def check_cell(self, cell, value):
-        if self.sudoku_full[cell[0], cell[1]] == value:
+        cvalue = self.sudoku_full[cell[0]][cell[1]]
+        print cvalue, value
+        if cvalue == value:
             return True
         else:
             return False

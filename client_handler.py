@@ -116,9 +116,11 @@ class ClientHandler(Thread):
             else:
                 print "error %s" % str(e)
         except:
+            print "Some error occured!"
             self.__client_socket.close()
         finally:
             self.__client_socket.close()
-        if not sess == None:
-            sess.remove_player(nick, self.__client_socket)
+            if not sess == None:
+                print "HANDLER REMOVE PLAYER ", nick
+                sess.remove_player(nick, self.__client_socket)
         print "client disconected"

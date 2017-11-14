@@ -27,6 +27,8 @@ class GamePlaying():
         self.state = None
         self.scores = None
         self.board = None
+        self.b_update = False
+        self.lc_update = Lock()
 
     def update_state(self, state):
         print "state updated"
@@ -40,19 +42,25 @@ class GamePlaying():
         self.board.set_table(self.scores)
         self.board.draw_board_numbers()
         self.board.draw_table_score()
-
+    
+    def init_board(self):
+        self.board = Board(self.nick, self.state, self.scores)# should retur board obj return_board(self.nick, self.state, self.scores)
+        
     def update_game(self):
         state = pickle.loads(self.s.recv(buffer_length))
         scores = pickle.loads(self.s.recv(buffer_length))
         print 'update game'
-        self.board.set_board_numbers(state)
-        self.board.set_table(scores)
-        self.board.draw_board_numbers()
-        self.board.show_board()
+        self.state =  state
+        self.scores = scores
+        self.update_board()
+        #self.board.set_board_numbers(state)
+        #self.board.set_table(scores)
+        #self.board.draw_board_numbers()
+        #self.board.show_board()
         self.s.send(DELIM.join([UPDATE_GAME]) )
         print "Scores"
         print self.scores
-        self.update_board()
+        
         #return_board(self.nick, self.state, self.scores)
 
     def get_status(self):
@@ -63,12 +71,10 @@ class GamePlaying():
     def run(self):
         self.playing = Thread(target=self.playing_game)
         self.listeting = Thread(target=self.listeting_server)
-        self.board = Board(self.nick, self.state, self.scores)# should retur board obj return_board(self.nick, self.state, self.scores)
-        self.board.draw_board_numbers()
-        self.board.show_board()
         self.playing.start()
         self.listeting.start()
 
+        #self.playing_game()
     
     def close(self):
         with self.l_game:
@@ -83,12 +89,19 @@ class GamePlaying():
 
     def playing_game(self):
         prev_turn = (0,(0,0))
+        cell = None
         while True:
             with self.l_game:
                 status = self.game
             if status == True:
-                cell = self.board.get_last_move()
-                
+                #cell = self.board.get_last_move()
+                #v = self.board.get_val()
+                #global lc_cell
+                #with lc_cell:
+                    #print "accesing g_cell"
+                cell = get_gcell()
+                time.sleep(2)
+                print prev_turn, cell
                 if prev_turn!=cell:
                     
                     print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
@@ -96,6 +109,12 @@ class GamePlaying():
                     data = DELIM.join([PLAY_TURN,str(cell[1][0]), str(cell[1][1]), str(cell[0])] )
                     self.s.send(data)
                 prev_turn = cell
+                '''
+                if self.b_update == True:
+                    with self.lc_update:
+                        self.b_update = False
+                    self.update_game()
+                '''    
             else:
                 self.board.end_game()
                 break
@@ -107,7 +126,7 @@ class GamePlaying():
                 status = self.game
             if status == True:
                 msg = self.s.recv(self.buffer_size).split(DELIM)
-                print 'receive from server'
+              #  print 'receive from server'
                 if msg[0] == GAME_END:
                     with self.l_game:
                         self.game = False
@@ -118,6 +137,9 @@ class GamePlaying():
                     print "winner: ", winner
                     break
                 if msg[0] == UPDATE_GAME:
+                    print "UPDATE REQUEST"
+                    #with self.lc_update:
+                     #   self.b_update = True
                     self.update_game()
             else:
                 break
@@ -246,9 +268,15 @@ if __name__ == '__main__':
     game = GamePlaying(s, nick)
     game.update_state(board)
     game.update_scores(scores)
+    game.init_board()
     time.sleep(random.randint(10,20))
+    
     game.run()
-
+    game.update_board()
+    game.board.frame.mainloop()
+    #game.playing_game()
+    
+    '''
     while True:
         exit = int(raw_input("exit?"))
         if exit == 1:
@@ -258,6 +286,7 @@ if __name__ == '__main__':
             game.close()
             break
     print "Thank you for playing!" 
+    '''
     '''
     try:
         while True:
