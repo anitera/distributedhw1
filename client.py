@@ -42,6 +42,7 @@ class GamePlaying():
         self.s.send(DELIM.join([UPDATE_GAME]) )
         print "Scores"
         print self.scores
+        return_board(self.nick, self.state, self.scores)
 
     def get_status(self):
         with self.l_game:

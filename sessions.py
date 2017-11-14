@@ -265,7 +265,7 @@ def save_sessions(cv):
 
 
 def current_sessions():
-    sess_names = [ x.get_name() for x in GH.values() ] 
+    sess_names = [ (v.session.get_size(), v.get_name()) for k,v in GH.iteritems() ] 
     return sess_names
 
 def load_sessions():

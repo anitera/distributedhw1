@@ -16,8 +16,7 @@ class ClientHandler(Thread):
 	#self.game_session_id = game_session_id
 
     def set_sessions(self, sess_names):
-        for id, name in enumerate(sess_names):
-            self.sess_names.append( (id,name ) )
+        self.sess_names = sess_names
 
     def run(self):
         self.__handle()
