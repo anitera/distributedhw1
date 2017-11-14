@@ -72,12 +72,12 @@ class GamePlaying():
             with self.l_game:
                 status = self.game
             if status == True:
-                return_board(self.nick, self.state, self.scores)
+                cell = return_board(self.nick, self.state, self.scores)
                 time.sleep(random.randint(10,30))
-                print self.nick, " playing turn"
-                cell = list([random.randint(1,9), random.randint(1,9)])
+                print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
+                #cell = list([random.randint(1,9), random.randint(1,9)])
                 value = random.randint(1,9)
-                data = DELIM.join([PLAY_TURN,str(cell[0]), str(cell[1]), str(value)] )
+                data = DELIM.join([PLAY_TURN,str(cell[1][0]), str(cell[1][1]), str(cell[0])] )
                 self.s.send(data)
             else:
                 print "game over"

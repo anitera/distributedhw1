@@ -99,9 +99,19 @@ class GameHandler(Thread):
     def play_turn(self, cell, value, name):
         with self.cv_turn:
             print "player ", name, " place ", value, " in cell ", cell
-            with self.m_update:
-                self.scores[name] += 1
-            self.cv_turn.notify()
+            i = int(cell[0])
+            j = int(cell[1])
+            #check if cell is equal board_ans = session.get_total()
+            board_ans = session.get_total()
+            print 'matrix ',board_ans[i][j], 'i ', i, 'j ', j
+            if value == board_ans[i][j]:
+                with self.m_update:
+                    self.scores[name] += 1
+                self.cv_turn.notify()
+            else: 
+                with self.m_update:
+                    self.scores[name] -= 1
+                self.cv_turn.notify()
     
     def send_to_players(self, data):
         for k, v in self.players.items():
