@@ -26,6 +26,7 @@ class GamePlaying():
         self.l_game = Lock()
         self.state = None
         self.scores = None
+        self.board = None
 
     def update_state(self, state):
         print "state updated"
@@ -34,6 +35,12 @@ class GamePlaying():
     def update_scores(self, scores):
         print "scores updated"
         self.scores=scores
+    def update_board(self):
+        self.board.set_board_numbers(self.state)
+        self.board.set_table(self.scores)
+        self.board.draw_board_numbers()
+        self.board.draw_table_score()
+
     def update_game(self):
         state = pickle.loads(self.s.recv(buffer_length))
         scores = pickle.loads(self.s.recv(buffer_length))
@@ -42,7 +49,8 @@ class GamePlaying():
         self.s.send(DELIM.join([UPDATE_GAME]) )
         print "Scores"
         print self.scores
-        return_board(self.nick, self.state, self.scores)
+        self.update_board()
+        #return_board(self.nick, self.state, self.scores)
 
     def get_status(self):
         with self.l_game:
@@ -52,6 +60,7 @@ class GamePlaying():
     def run(self):
         self.playing = Thread(target=self.playing_game)
         self.listeting = Thread(target=self.listeting_server)
+        self.board = # should retur board obj return_board(self.nick, self.state, self.scores)
         self.playing.start()
         self.listeting.start()
 
@@ -72,8 +81,8 @@ class GamePlaying():
             with self.l_game:
                 status = self.game
             if status == True:
-                cell = return_board(self.nick, self.state, self.scores)
-                time.sleep(random.randint(10,30))
+                cell = #should get cell from board while ready 
+                #time.sleep(random.randint(10,30))
                 print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
                 #cell = list([random.randint(1,9), random.randint(1,9)])
                 value = random.randint(1,9)
