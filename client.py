@@ -12,7 +12,7 @@ buffer_length = 5024
 from protocol import *
 import pickle
 import random
-from threading import Thread, Lock
+from threading import Thread, Lock, Condition
 import signal
 from Board_gui import *
 
@@ -26,9 +26,10 @@ class GamePlaying():
         self.l_game = Lock()
         self.state = None
         self.scores = None
-        self.board = None
+       # self.board = None
         self.b_update = False
         self.lc_update = Lock()
+        self.cv_out = Condition()
 
     def update_state(self, state):
         print "state updated"
@@ -52,14 +53,20 @@ class GamePlaying():
         print 'update game'
         self.state =  state
         self.scores = scores
-        self.update_board()
+        #self.update_board()
         #self.board.set_board_numbers(state)
         #self.board.set_table(scores)
         #self.board.draw_board_numbers()
         #self.board.show_board()
         self.s.send(DELIM.join([UPDATE_GAME]) )
-        print "Scores"
-        print self.scores
+        with self.cv_out:
+            print "Board"
+            for r in self.state:
+                print r
+            print "Scores"
+            print self.scores
+
+            self.cv_out.notify()
         
         #return_board(self.nick, self.state, self.scores)
 
@@ -99,15 +106,30 @@ class GamePlaying():
                 #global lc_cell
                 #with lc_cell:
                     #print "accesing g_cell"
-                cell = get_gcell()
-                time.sleep(2)
-                print prev_turn, cell
+                exit = int(raw_input("press 99 to exit"))
+                if exit == 99:
+                    with self.l_game:
+                        self.game = False
+                    print "game ended by player!"
+                break
+
+                cell_i = int(raw_input("choose col "))
+                cell_j = int(raw_input("choose raw "))
+                val = int(raw_input("enter val "))
+                cell = (val, (cell_i, cell_j) )
+  #              cell = get_gcell()
+#                time.sleep(2)
+ #               print prev_turn, cell
                 if prev_turn!=cell:
                     
                     print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
                    
                     data = DELIM.join([PLAY_TURN,str(cell[1][0]), str(cell[1][1]), str(cell[0])] )
                     self.s.send(data)
+                        
+                    with self.cv_out:
+                        self.cv_out.wait()
+
                 prev_turn = cell
                 '''
                 if self.b_update == True:
@@ -116,7 +138,7 @@ class GamePlaying():
                     self.update_game()
                 '''    
             else:
-                self.board.end_game()
+              #  self.board.end_game()
                 break
     
 
@@ -268,25 +290,21 @@ if __name__ == '__main__':
     game = GamePlaying(s, nick)
     game.update_state(board)
     game.update_scores(scores)
-    game.init_board()
+    #game.init_board()
     time.sleep(random.randint(10,20))
     
     game.run()
-    game.update_board()
-    game.board.frame.mainloop()
+   # game.update_board()
+   # game.board.frame.mainloop()
     #game.playing_game()
     
-    '''
+    
     while True:
-        exit = int(raw_input("exit?"))
-        if exit == 1:
-            game.close()
-            break
-        elif game.get_status() == False:
+        if game.get_status() == False:
             game.close()
             break
     print "Thank you for playing!" 
-    '''
+    
     '''
     try:
         while True:
