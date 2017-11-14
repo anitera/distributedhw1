@@ -65,7 +65,7 @@ class Board():
     def set_board_numbers(self, matrix):
         self.board_matrix = matrix
         
-    def last_move(self):
+    def get_last_move(self):
         return self.last_move
     
     def EnterVal(self, e, a, b, ent):

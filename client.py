@@ -44,8 +44,11 @@ class GamePlaying():
     def update_game(self):
         state = pickle.loads(self.s.recv(buffer_length))
         scores = pickle.loads(self.s.recv(buffer_length))
-        self.update_state(state)
-        self.update_scores(scores)
+        print 'update game'
+        self.board.set_board_numbers(state)
+        self.board.set_table(scores)
+        self.board.draw_board_numbers()
+        self.board.show_board()
         self.s.send(DELIM.join([UPDATE_GAME]) )
         print "Scores"
         print self.scores
@@ -60,7 +63,9 @@ class GamePlaying():
     def run(self):
         self.playing = Thread(target=self.playing_game)
         self.listeting = Thread(target=self.listeting_server)
-        self.board = # should retur board obj return_board(self.nick, self.state, self.scores)
+        self.board = Board(self.nick, self.state, self.scores)# should retur board obj return_board(self.nick, self.state, self.scores)
+        self.board.draw_board_numbers()
+        self.board.show_board()
         self.playing.start()
         self.listeting.start()
 
@@ -77,19 +82,22 @@ class GamePlaying():
             
 
     def playing_game(self):
+        prev_turn = (0,(0,0))
         while True:
             with self.l_game:
                 status = self.game
             if status == True:
-                cell = #should get cell from board while ready 
-                #time.sleep(random.randint(10,30))
-                print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
-                #cell = list([random.randint(1,9), random.randint(1,9)])
-                value = random.randint(1,9)
-                data = DELIM.join([PLAY_TURN,str(cell[1][0]), str(cell[1][1]), str(cell[0])] )
-                self.s.send(data)
+                cell = self.board.get_last_move()
+                
+                if prev_turn!=cell:
+                    
+                    print self.nick, " playing turn ", cell[1][0], cell[1][1], cell[0]
+                   
+                    data = DELIM.join([PLAY_TURN,str(cell[1][0]), str(cell[1][1]), str(cell[0])] )
+                    self.s.send(data)
+                prev_turn = cell
             else:
-                print "game over"
+                self.board.end_game()
                 break
     
 
@@ -99,6 +107,7 @@ class GamePlaying():
                 status = self.game
             if status == True:
                 msg = self.s.recv(self.buffer_size).split(DELIM)
+                print 'receive from server'
                 if msg[0] == GAME_END:
                     with self.l_game:
                         self.game = False
