@@ -18,11 +18,12 @@ from client import *
 class Board():
     def __init__(self, nick, matrix=None, table=None, finished=False):
         self.board = tk.Tk()
+        self.head = 'Username: ' + nick + '\n'
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
         self.board_height = 9 * self.cell_size
-        w = tk.Canvas(self.board, width=self.board_width, height=self.board_height)
-        self.canvas = w
+        self.frame = tk.Frame(self.board)
+        self.canvas = tk.Canvas(self.frame, width=self.board_width, height=self.board_height)
         if matrix is not None:
             self.board_matrix = matrix
         else:
@@ -31,19 +32,16 @@ class Board():
             self.table = table
         else:
             self.table = dict()
-            self.table[nick] = 0
-        self.draw_table_score()
+            self.table[nick] = table_score
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
-        self.initialize_board()
-        #self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
-        self.head = 'Username: ' + nick + '\n'
-        self.lab = tk.Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
-        self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
         self.last_move = (0, (0, 0))
         self.finished = finished
         #some object with dictionary table_score
     
+    def initialize_frame(self):
+        self.lab = tk.Label(self.frame, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
+        self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
     
     def initialize_board(self):
         for i in range(9):
@@ -59,21 +57,25 @@ class Board():
         self.canvas.pack()
         
     def show_board(self):
-        self.board.mainloop()
-    
+        self.frame.mainloop()
+
     def set_board_number(self, i, j, value):
         self.board_matrix[i][j] = value
     
     def set_board_numbers(self, matrix):
         self.board_matrix = matrix
         
+    def last_move(self):
+        return self.last_move
+    
     def EnterVal(self, e, a, b, ent):
         value = e.get()
         if value in [str(i) for i in range(1,10)]:
             self.last_move = (value, (a, b))
             tkBox.showinfo("Thanks", "Your move is proceed")
             ent.destroy()
-            self.board.destroy()
+            self.canvas.delete("all")
+            self.frame.quit()
         else:
             tkBox.showerror("Incorrect format", "Please enter number from 1 to 9")
     
@@ -91,9 +93,11 @@ class Board():
         button1 = tk.Button(enter_number, text = "Proceed",
                             command=lambda: self.EnterVal(entry_number, cell_column, cell_row, enter_number))
         button1.pack()
-        #enter_number.mainloop()
         
     def draw_board_numbers(self):
+        self.initialize_frame()
+        self.draw_table_score()
+        self.initialize_board()
         for i in range(len(self.board_matrix)):
             for j in range(len(self.board_matrix[0])):
                 if self.board_matrix[i][j]:
@@ -109,13 +113,14 @@ class Board():
                                   font="Times 20 italic bold",
                                   text="?", tags='clickable')
         self.canvas.tag_bind('clickable', '<Button-1>', self.Click)
+        self.frame.pack()
         if self.finished:
             self.end_game()
         
     def draw_table_score(self):
-        self.table_score_listbox = tk.Listbox(self.board)
+        self.table_score_listbox = tk.Listbox(self.frame)
         self.table_score_listbox.place(x = int(11.5 * self.cell_size), y = int(3 * self.cell_size))
-        table_name = tk.Label(self.board, text="NAME    SCORE",fg = 'navy', font=('Helvetica', 13))
+        table_name = tk.Label(self.frame, text="NAME    SCORE",fg = 'navy', font=('Helvetica', 13))
         table_name.place(x = int(11.5 * self.cell_size), y = int(2.6 * self.cell_size))
         users_counter = 0
         sorted_table = sorted((self.table).items(), key=operator.itemgetter(1), reverse=True)
@@ -134,13 +139,3 @@ class Board():
         sorted_table = sorted((self.table).items(), key=operator.itemgetter(1), reverse=True)
         tkBox.showinfo("Game is finished", "Winner is " + str(sorted_table[0][0]))
         self.board.destroy()
-
-def return_board(nick, matrix, table_score, finished=False):
-        # we need to send here matrix question from session and table_score
-    #matrix_task, matrix_answer = return_question_and_answer()
-    board = Board(nick, matrix, table_score, finished)
-    board.initialize_board()
-    board.set_board_numbers(matrix)
-    board.draw_board_numbers()
-    board.show_board()
-    return board.last_move
