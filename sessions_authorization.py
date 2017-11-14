@@ -9,9 +9,12 @@ try:
 except ImportError:
     from tkinter import messagebox as tkBox
 
+sessionname_return = ''
+sessuionsize_return = 0
 
-def send_data_sessions(listbox, sessions, number_of_players, window, sess): 
-    print 'send data ', listbox, ' sess: ', sessions, ' sess: ', sess
+
+def send_data_sessions(listbox, sessions, number_of_players, window): 
+    print 'send data ', listbox, ' sess: ', sessions
     current = listbox.curselection()
     global sessionname_return
     global sessionsize_return
@@ -98,10 +101,12 @@ def sessionStart(sessions):
     number_of_players = tk.Entry()
     number_of_players.place(x=number_x, y=number_y)
 
-    a = tk.Button(window, text="Pick session", command=lambda: send_data_sessions(listbox, session, number_of_players, window, sess))
+    a = tk.Button(window, text="Pick session", command=lambda: send_data_sessions(listbox, session, number_of_players, window))
     a.config(height = button_height, width = button_width)
     a.place(x=button_x, y=button_y)
     window.mainloop()
+    global sessionname_return
+    global sessionsize_return
     return (sessionname_return, sessionsize_return)
 
 '''

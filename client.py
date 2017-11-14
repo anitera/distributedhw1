@@ -14,6 +14,7 @@ import pickle
 import random
 from threading import Thread, Lock
 import signal
+from Board_gui import *
 
 class GamePlaying():
 
@@ -70,6 +71,7 @@ class GamePlaying():
             with self.l_game:
                 status = self.game
             if status == True:
+                return_board(self.nick, self.state, self.scores)
                 time.sleep(random.randint(10,30))
                 print self.nick, " playing turn"
                 cell = list([random.randint(1,9), random.randint(1,9)])
@@ -133,46 +135,50 @@ if __name__ == '__main__':
     #sessionStart() # session start window
 
     print "Multiplayer Game"
-    
+    flag_of_new_session = True
+
     sessions  = pickle.loads(s.recv(buffer_length))
     print sessions
-    #s_ret = sessionStart(sessions)
-    #print 'We return value yiiiii', s_ret[0]
-    #print 'name ', s_ret[1]
-    # here we need to know id of our session and max number of clients
-    flag_of_new_session = False
-    current_session = ""
-    if len(sessions) > 0:
-        print "Current session"
-        for ss in sessions:
-            print ss
+    s_ret = sessionStart(sessions)
+    print 'Size of session', s_ret[1]
+    print 'Session name ', s_ret[0]
+    
+    for sess in sessions:
+        if s_ret[0] == sess[1]:
+            flag_of_new_session = False
 
-        sess_name = raw_input("choose sess name or 0 to procceed: ")
-        if sess_name == "0":
-            print "create a new sesson"
-            flag_of_new_session = True
-        else:
-            snames = [x[1] for x in sessions ] 
-            if sess_name in snames:
-                current_session = sess_name
-            else:
-                print "Session doesnt exist"
-    else:
-        flag_of_new_session = True
+
+
+    # here we need to know id of our session and max number of clients
+    #current_session = ""
+    #if len(sessions) > 0:
+    #    print "Current session"
+    #    for ss in sessions:
+    #        print ss
+
+    #    sess_name = raw_input("choose sess name or 0 to procceed: ")
+    #    if sess_name == "0":
+    #        print "create a new sesson"
+    #        flag_of_new_session = True
+    #    else:
+    #        snames = [x[1] for x in sessions ] 
+    #        if sess_name in snames:
+    #            current_session = sess_name
+    #        else:
+    #            print "Session doesnt exist"
+    #else:
+    #    flag_of_new_session = True
 
     #session_id = 0
     # session_size = 4
 
     if flag_of_new_session:
-        sess_name = raw_input("input sess name ")
-        sess_size = int (raw_input("input sess size") )
-        s.send(DELIM.join([NEW_SESSION, sess_name, str(sess_size), nick]))
-	# s.send(('3' + args.size).encode('utf-8') + '\n' + str(size).encode('utf-8'))
-	#print '0' + nick + str(session_size)
-	#s.send('0' + ' ' + nick + ' ' + str(session_size))
+        
+        s.send(DELIM.join([NEW_SESSION, s_ret[0], str(s_ret[1]), nick]))
+	
     else: 
-        print "Session=", current_session, " Nick=", nick
-        s.send(DELIM.join([OLD_SESSION, current_session, nick]))
+        print "Session=", s_ret[0], " Nick=", nick
+        s.send(DELIM.join([OLD_SESSION, s_ret[0], nick]))
 	#s.send('1' + ' ' + nick + ' ' + str(session_id))
  
 

@@ -16,7 +16,7 @@ from Generation import *
 from client import *
 
 class Board():
-    def __init__(self, nick, host, port, session_id, session_size, table_score, matrix=None, table=None):
+    def __init__(self, nick, matrix=None, table=None):
         self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
@@ -36,7 +36,8 @@ class Board():
         self.numbers_dict = {1 : 'blue', 2: 'green', 3: 'magenta', 4: 'orangered', 5: 'limegreen',
                              6: 'orange', 7: 'brown', 8: 'purple', 9: 'darkcyan'}
         self.initialize_board()
-        self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
+        #self.head = 'Username: ' + nick + '\n' + 'host:port ' + host + ':' + str(port) + '\n' + 'Session ' + str(session_id) + '\n' + 'Users in game: ' + str(session_size)
+        self.head = 'Username: ' + nick + '\n'
         self.lab = tk.Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
         self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
         self.last_move = (0, (0, 0))
@@ -125,11 +126,11 @@ class Board():
     def set_table(self, table):
         self.table = table
 
-def return_board(nick, host, port, session_id, session_size, table_score):
+def return_board(nick, matrix, table_score):
         # we need to send here matrix question from session and table_score
-	matrix_task, matrix_answer = return_question_and_answer()
-	board = Board(nick, host, port, session_id, session_size, table_score)
+	#matrix_task, matrix_answer = return_question_and_answer()
+	board = Board(nick, matrix, table_score)
 	board.initialize_board()
-	board.set_board_numbers(matrix_task)
+	board.set_board_numbers(matrix)
 	board.draw_board_numbers()
 	board.show_board()

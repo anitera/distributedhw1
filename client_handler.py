@@ -12,7 +12,7 @@ class ClientHandler(Thread):
         self.__client_address = client_addr
         self.buffer_size = 1024
         self.sess_names = []
-       # self.cv_sess = None
+        # self.cv_sess = None
 	#self.game_session_id = game_session_id
 
     def set_sessions(self, sess_names):
