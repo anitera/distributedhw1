@@ -16,18 +16,18 @@ from Generation import *
 from client import *
 
 class Board():
-    def __init__(self, nick, matrix=None, table=None):
+    def __init__(self, nick, matrix=None, table=None, finished=False):
         self.board = tk.Tk()
         self.cell_size = 60
         self.board_width = 15 * self.cell_size
         self.board_height = 9 * self.cell_size
         w = tk.Canvas(self.board, width=self.board_width, height=self.board_height)
         self.canvas = w
-        if matrix:
+        if matrix is not None:
             self.board_matrix = matrix
         else:
             self.board_matrix = [[0 for k in range(9)] for k in range(9)]
-        if table:
+        if table is not None:
             self.table = table
         else:
             self.table = dict()
@@ -41,6 +41,7 @@ class Board():
         self.lab = tk.Label(self.board, text = self.head, justify = 'right', fg = 'navy', font=('Helvetica', 14))
         self.lab.place(x = 11 * self.cell_size, y = 0.5 * self.cell_size)
         self.last_move = (0, (0, 0))
+        self.finished = finished
         #some object with dictionary table_score
     
     
@@ -72,6 +73,7 @@ class Board():
             self.last_move = (value, (a, b))
             tkBox.showinfo("Thanks", "Your move is proceed")
             ent.destroy()
+            self.board.destroy()
         else:
             tkBox.showerror("Incorrect format", "Please enter number from 1 to 9")
     
@@ -99,7 +101,7 @@ class Board():
                                             j * self.cell_size + self.cell_size / 2, activefill = 'olive',
                                             fill = self.numbers_dict[int(self.board_matrix[i][j])],
                                   font="Times 20 italic bold",
-                                  text=self.board_matrix[i][j])
+                                  text=int(self.board_matrix[i][j]))
                 else:
                     self.canvas.create_text(i * self.cell_size + self.cell_size / 2,
                                             j * self.cell_size + self.cell_size / 2, activefill = 'olive',
@@ -107,6 +109,8 @@ class Board():
                                   font="Times 20 italic bold",
                                   text="?", tags='clickable')
         self.canvas.tag_bind('clickable', '<Button-1>', self.Click)
+        if self.finished:
+            self.end_game()
         
     def draw_table_score(self):
         self.table_score_listbox = tk.Listbox(self.board)
@@ -125,12 +129,18 @@ class Board():
             
     def set_table(self, table):
         self.table = table
+        
+    def end_game(self):
+        sorted_table = sorted((self.table).items(), key=operator.itemgetter(1), reverse=True)
+        tkBox.showinfo("Game is finished", "Winner is " + str(sorted_table[0][0]))
+        self.board.destroy()
 
-def return_board(nick, matrix, table_score):
+def return_board(nick, matrix, table_score, finished=False):
         # we need to send here matrix question from session and table_score
-	#matrix_task, matrix_answer = return_question_and_answer()
-	board = Board(nick, matrix, table_score)
-	board.initialize_board()
-	board.set_board_numbers(matrix)
-	board.draw_board_numbers()
-	board.show_board()
+    #matrix_task, matrix_answer = return_question_and_answer()
+    board = Board(nick, matrix, table_score, finished)
+    board.initialize_board()
+    board.set_board_numbers(matrix)
+    board.draw_board_numbers()
+    board.show_board()
+    return board.last_move
